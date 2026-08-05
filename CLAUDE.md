@@ -24,6 +24,23 @@ site is what gets marked, at both 1920×1080 and 390×844.
   path --- the deployed site lives under `/comp4020-crit2-am167/`, and a
   relative link resolves correctly there without needing the base baked in.
 
+## Dependencies
+
+`pnpm-workspace.yaml` sets a `minimumReleaseAge` window: freshly published
+package versions cannot be installed. This is a defence against active npm
+supply-chain attacks --- hijacked maintainer accounts publishing malicious
+releases that steal cloud credentials, npm and CI tokens, worm themselves into
+other packages, and install persistence on whatever machine runs `install`. The
+window *is* the protection: it keeps those releases out of this repo during the
+hours before they're detected and pulled from the registry.
+
+Never circumvent it, under any circumstances. Do not lower it, disable it, set
+`trustLockfile`, add a blanket `minimumReleaseAgeExclude`, or sidestep it in a
+scratch directory or "just for testing" --- and never suggest doing any of those.
+No deadline, red check, or blocked install justifies it; a guard that gets
+switched off when it's inconvenient is not a guard. If it blocks something, stop
+and tell me.
+
 ## Process logging
 
 After each meaningful chunk of work --- a feature, a fix, a design decision ---

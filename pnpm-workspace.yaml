@@ -1,3 +1,24 @@
 # esbuild (used by Vite) needs its postinstall to set up its native binary.
 allowBuilds:
   esbuild: true
+
+# Don't resolve any version published less than 4 days ago (4 * 24 * 60 minutes),
+# transitive deps included. Compromised releases --- the keyv/cacheable namespace
+# takeover being the recent example --- are usually spotted and pulled within
+# hours, so sitting out that window keeps them out of the tree.
+#
+# 7 days would be better, but pnpm 11 also re-verifies every existing lockfile
+# entry against this policy, and 25 entries in the committed lockfile (the
+# @astrojs/compiler-binding-* set, @shikijs/* 4.4.1, @babel/parser 7.29.8) were
+# published 29--31 Jul 2026, so a 7-day window fails `--frozen-lockfile` locally
+# and in CI. Once those age past a week --- after 2026-08-07 --- raising this to
+# 10080 should pass cleanly. Don't reach for `trustLockfile` to force it: that
+# skips the verification pass entirely rather than waiting.
+minimumReleaseAge: 5760
+
+# Fail resolution outright when nothing in a range is old enough, rather than
+# quietly falling back to a too-fresh version. Implied by setting the age above,
+# but pinned so the behaviour doesn't depend on a default. If a package ever
+# genuinely needs a brand-new release, exempt just that one with
+# minimumReleaseAgeExclude rather than lowering the window for everything.
+minimumReleaseAgeStrict: true
