@@ -35,6 +35,17 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   --- the page is wrong until the check is green, not until you decide it should
   be.
 - Commit when the checks pass. Never commit a red state.
+- Never suggest, ask about, or perform publishing/deploying the site (e.g.
+  pushing to GitHub Pages, merging to the deploy branch) unless I explicitly
+  say so.
+- Don't create git worktrees for this repo unless I explicitly ask for one.
+- Any major change (new page, content rewrite, layout or CSS change) needs
+  visual verification at both marked viewports (1920×1080 and 390×844) in
+  actual Chrome before it's considered done --- `pnpm check` proves structure,
+  not that a human can read the page. Use `pnpm preview` (not `file://` ---
+  Vite's `crossorigin` attribute on the built stylesheet breaks over the
+  opaque `file://` origin), and measure rather than eyeball where possible
+  (e.g. `scrollWidth === clientWidth`, not just a screenshot).
 
 ## The checks (your sensors)
 
@@ -151,6 +162,29 @@ means building legibly is part of building well.
 
 You don't need a name, a student number, or any identity file in the repo: we
 know whose repo it is. Spend the effort on the work.
+
+## Process logging
+
+After each meaningful chunk of work --- a feature, a fix, a design decision ---
+append a short entry to `notes/log.md` describing what was done and why. Do
+this as we go, not reconstructed at the end of the week. Keep entries terse;
+they're raw material for the final write-up, not the write-up itself, so log
+generously rather than sparingly.
+
+`PROCESS.md` is the curated submission artefact, not the log: one paragraph on
+what I built, then three or four moments, each doing all four jobs (what
+happened, what I did instead of the obvious thing, how I knew it was right, and
+a citation --- a commit or range, a `CLAUDE.md` change, or a check that went
+red to green). Don't append running entries to it; I'll decide what gets
+promoted out of `notes/log.md`.
+
+## Reflections
+
+Never write the content of the reflections file in `reflections/` --- that's my
+own reflection on the work, in my own words, and it's not the agent's to draft
+or fill in. Leave the file with just its standing-prompt headers; if it needs
+to exist for `check:evidence` or similar, create/keep the headers only, never
+the prose underneath them.
 
 ## This file is yours
 
