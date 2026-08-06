@@ -99,6 +99,16 @@ select {
   color: var(--color-text-muted);
 }
 
+/* Shared "manage something" page layout — Concession, Top up, Auto top-up:
+   a heading followed by a stack of full-width cards, no narrow centered
+   wrapper. Keeps every settings-style page reading the same way. */
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

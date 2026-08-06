@@ -488,3 +488,43 @@ page (confirming the `loggedIn={false}` path still shows the original auth
 links). `pnpm check` green throughout (87 tests). Chrome DevTools MCP's
 shared browser profile was briefly locked by another concurrent session
 mid-task; waited for it to release rather than fighting it.
+
+## 2026-08-06 --- layout consistency + a live map
+
+Two more pieces of feedback: Top up and Auto top-up looked out of place next
+to Concession (a narrow centered card in a sea of black, vs. Concession's
+full-width stack of cards), and a request for a "live map" of buses/trams
+moving around Canberra using fake data. Entered plan mode for this one —
+multiple real design decisions (map library vs. hand-rolled, where it lives,
+animation technique) worth getting right before writing code, and used a
+Plan subagent + one AskUserQuestion (new nav page vs. a dashboard section —
+went with the dedicated page, to avoid re-crowding the dashboard we just
+decluttered last round).
+
+- **Layout fix**: deleted the `max-width`-and-centered wrapper from both
+  `top-up.astro` and `auto-top-up.astro`; both now use the same `h1` +
+  `.page-stack` pattern `concession.astro` already had (a heading, then a
+  stack of full-width `BentoTile`s). Promoted `.page-stack` into
+  `global.css` since it's now shared by three pages instead of copy-pasted.
+  Each page's second card surfaces real, previously-unused `FARE_TABLE`
+  fields (daily/monthly caps, transfer window on Top up; the 5%
+  auto-top-up discount on Auto top-up) rather than padding with filler —
+  genuine content, not decoration for its own sake.
+- **Live map**: new `/live-map/` page. Deliberately *not* a real map (no
+  Leaflet/tile dependency — this project has zero runtime dependencies and
+  a strict supply-chain policy I wasn't going to work around for a decorative
+  feature) — an inline SVG hub-and-spoke schematic, same "abstract diagram,
+  not literal geography" language `LineDiagram` already established.
+  Vehicles are the *same* `DEPARTURES` fixture already used on the
+  dashboard (not a parallel invented fixture), animated along `<path>`s via
+  SVG `<animateMotion>`/`<mpath>` — no JS animation loop, works in the
+  static build, GPU/SMIL-driven. Verified motion by reading
+  `getBoundingClientRect()` on the vehicle markers twice a few seconds apart
+  (positions changed) rather than trusting a single screenshot, and verified
+  the `prefers-reduced-motion` path by calling `pauseAnimations()` directly
+  and confirming positions then stayed identical across reads.
+- `pnpm check` green (95 tests — the two new invariants-covered pages
+  account for the jump from 87). Visual pass at 1920×1080 and 390×844 in
+  real Chrome via `pnpm preview`: no horizontal overflow at 390px, the three
+  "manage something" pages now read as one pattern, the live map's nav link
+  and mobile menu both resolve correctly.

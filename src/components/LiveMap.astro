@@ -1,0 +1,216 @@
+---
+import BentoTile from "./BentoTile.astro";
+import RouteChip from "./RouteChip.astro";
+import { DEPARTURES, NETWORK_LINES, NETWORK_NODES } from "../lib/fixtures";
+import type { NetworkLine, NetworkNode } from "../lib/fixtures";
+
+const nodesById: Record<string, NetworkNode> = Object.fromEntries(
+  NETWORK_NODES.map((node): [string, NetworkNode] => [node.id, node]),
+);
+
+function pathFor(line: NetworkLine) {
+  const points = line.nodeIds.map((id) => nodesById[id]);
+  return `M ${points.map((p) => `${p.x},${p.y}`).join(" L ")}`;
+}
+
+// Cosmetic animation pacing only — not domain data, so it lives here rather
+// than in fixtures.ts. Roughly proportional to each spoke's schematic length.
+const LINE_DURATIONS_SECONDS: Record<string, number> = {
+  "line-light-rail": 18,
+  "line-rapid-3": 10,
+  "line-rapid-4": 9,
+  "line-rapid-7": 13,
+  "line-rapid-2": 11,
+};
+
+// Maps each DEPARTURES route to the network line it runs on. Light Rail is
+// the only line with vehicles going both directions in the fixture data.
+const ROUTE_LINES: Record<string, { lineId: string; reverseHeadsigns?: string[] }> = {
+  "Light Rail": { lineId: "line-light-rail", reverseHeadsigns: ["Gungahlin Place"] },
+  "Rapid 3": { lineId: "line-rapid-3" },
+  "Rapid 4": { lineId: "line-rapid-4" },
+  "Rapid 7": { lineId: "line-rapid-7" },
+  "Rapid 2": { lineId: "line-rapid-2" },
+};
+
+const vehicles = DEPARTURES.map((departure) => {
+  const lineInfo = ROUTE_LINES[departure.route];
+  return {
+    id: departure.id,
+    mode: departure.mode,
+    headsign: departure.headsign,
+    route: departure.route,
+    lineId: lineInfo.lineId,
+    reverse: lineInfo.reverseHeadsigns?.includes(departure.headsign) ?? false,
+    durationSeconds: LINE_DURATIONS_SECONDS[lineInfo.lineId] ?? 12,
+  };
+});
+---
+
+<div class="live-map">
+  <BentoTile>
+    <p class="live-map__caption">
+      A simulated view of the network right now — schematic, not to scale,
+      built from demo data.
+    </p>
+    <svg
+      class="live-map__diagram"
+      viewBox="0 0 1000 700"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {
+        NETWORK_LINES.map((line) => (
+          <path
+            id={line.id}
+            d={pathFor(line)}
+            data-mode={line.mode}
+            class="live-map__route"
+          />
+        ))
+      }
+      {
+        NETWORK_NODES.map((node) => (
+          <g class="live-map__node">
+            <circle
+              cx={node.x}
+              cy={node.y}
+              r={node.id === "city" ? 9 : 6}
+            />
+            <text x={node.x} y={node.y - 16}>
+              {node.name}
+            </text>
+          </g>
+        ))
+      }
+      {
+        vehicles.map((vehicle) => (
+          <g class="live-map__vehicle" data-mode={vehicle.mode}>
+            <circle r="7" />
+            <animateMotion
+              dur={`${vehicle.durationSeconds}s`}
+              repeatCount="indefinite"
+              calcMode="linear"
+              keyPoints={vehicle.reverse ? "1;0;1" : "0;1;0"}
+              keyTimes="0;0.5;1"
+            >
+              <mpath href={`#${vehicle.lineId}`} />
+            </animateMotion>
+          </g>
+        ))
+      }
+    </svg>
+  </BentoTile>
+
+  <BentoTile>
+    <h2>Vehicles in transit</h2>
+    <ul class="live-map__vehicle-list">
+      {
+        vehicles.map((vehicle) => (
+          <li>
+            <RouteChip
+              mode={vehicle.mode}
+              label={vehicle.mode === "bus" ? vehicle.route : "Light rail"}
+            />
+            <span>En route to {vehicle.headsign}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </BentoTile>
+</div>
+
+<script>
+  const svg = document.querySelector<SVGSVGElement>(".live-map__diagram");
+  if (svg && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    svg.pauseAnimations();
+  }
+</script>
+
+<style>
+  .live-map {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  .live-map__caption {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .live-map__diagram {
+    width: 100%;
+    height: auto;
+  }
+
+  .live-map__route {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.5;
+  }
+
+  .live-map__route[data-mode="bus"] {
+    stroke: var(--color-bus);
+  }
+
+  .live-map__route[data-mode="light-rail"] {
+    stroke: var(--color-rail);
+  }
+
+  .live-map__node circle {
+    fill: var(--color-bg);
+    stroke: var(--color-text-dim);
+    stroke-width: 2;
+  }
+
+  .live-map__node text {
+    fill: var(--color-text-muted);
+    font-size: 16px;
+    text-anchor: middle;
+  }
+
+  .live-map__vehicle circle {
+    stroke: var(--color-bg);
+    stroke-width: 2;
+  }
+
+  .live-map__vehicle[data-mode="bus"] circle {
+    fill: var(--color-bus);
+  }
+
+  .live-map__vehicle[data-mode="light-rail"] circle {
+    fill: var(--color-rail);
+  }
+
+  .live-map__vehicle-list {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .live-map__vehicle-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .live-map__vehicle-list span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 1023px) {
+    .live-map {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

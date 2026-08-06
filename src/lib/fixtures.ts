@@ -308,3 +308,66 @@ export const DEPARTURES: Departure[] = [
     delayMinutes: 2,
   },
 ];
+
+export interface NetworkNode {
+  id: string;
+  name: string;
+  /** Schematic diagram coordinates in a 0–1000 × 0–700 viewBox — loosely
+   * follow real compass relationships (Gungahlin north, Belconnen
+   * north-west, Woden/Tuggeranong south) but aren't real GPS coordinates.
+   * Same "abstract diagram, not literal geography" approach as
+   * `LIGHT_RAIL_LINE`'s stop list. */
+  x: number;
+  y: number;
+}
+
+// Interchange names are real (they're the same ones used above in
+// SAMPLE_TRIPS/DEPARTURES); the schematic layout is invented for this
+// diagram, not a real map.
+export const NETWORK_NODES: NetworkNode[] = [
+  { id: "gungahlin", name: "Gungahlin Place", x: 500, y: 90 },
+  { id: "dickson", name: "Dickson Interchange", x: 500, y: 230 },
+  { id: "city", name: "City Interchange", x: 500, y: 380 },
+  { id: "belconnen", name: "Belconnen Interchange", x: 200, y: 190 },
+  { id: "woden", name: "Woden Interchange", x: 430, y: 580 },
+  { id: "tuggeranong", name: "Tuggeranong Interchange", x: 380, y: 660 },
+  { id: "erindale", name: "Erindale Centre", x: 620, y: 610 },
+];
+
+export interface NetworkLine {
+  id: string;
+  mode: "bus" | "light-rail";
+  route: string;
+  /** Ordered `NetworkNode` ids this line's path passes through. */
+  nodeIds: string[];
+}
+
+// Same routes as `DEPARTURES` above, laid out as a simple hub-and-spoke
+// schematic centred on City Interchange — not the real route geometry.
+export const NETWORK_LINES: NetworkLine[] = [
+  {
+    id: "line-light-rail",
+    mode: "light-rail",
+    route: "Light Rail",
+    nodeIds: ["gungahlin", "dickson", "city"],
+  },
+  { id: "line-rapid-3", mode: "bus", route: "Rapid 3", nodeIds: ["city", "woden"] },
+  {
+    id: "line-rapid-4",
+    mode: "bus",
+    route: "Rapid 4",
+    nodeIds: ["city", "belconnen"],
+  },
+  {
+    id: "line-rapid-7",
+    mode: "bus",
+    route: "Rapid 7",
+    nodeIds: ["city", "tuggeranong"],
+  },
+  {
+    id: "line-rapid-2",
+    mode: "bus",
+    route: "Rapid 2",
+    nodeIds: ["city", "erindale"],
+  },
+];
