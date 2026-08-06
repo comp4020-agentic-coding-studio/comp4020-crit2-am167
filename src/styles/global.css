@@ -23,18 +23,23 @@ main {
   padding: var(--space-6) var(--space-5);
 }
 
+main.main-wide {
+  max-width: 96rem;
+}
+
 h1,
 h2,
 h3 {
+  font-family: var(--font-display);
   line-height: 1.2;
 }
 
 a {
-  color: var(--color-brand);
+  color: var(--color-text);
 }
 
 a:hover {
-  color: var(--color-brand-strong);
+  color: var(--color-action-hover);
 }
 
 button,
@@ -84,7 +89,7 @@ select {
 
 .field input:focus,
 .field select:focus {
-  outline: 2px solid var(--color-brand);
+  outline: 2px solid var(--color-text);
   outline-offset: 1px;
 }
 
@@ -108,13 +113,19 @@ select {
 }
 
 .btn.primary {
-  background: var(--color-brand-strong);
-  color: var(--color-brand-contrast);
+  background: var(--color-action);
+  color: var(--color-action-contrast);
 }
 
 .btn.primary:hover {
-  background: var(--color-brand-stronger);
-  color: var(--color-brand-contrast);
+  background: var(--color-action-hover);
+  color: var(--color-action-contrast);
+}
+
+.btn.primary:disabled {
+  background: var(--color-surface-raised);
+  color: var(--color-text-dim);
+  cursor: not-allowed;
 }
 
 .btn.secondary {
@@ -125,7 +136,7 @@ select {
 
 .btn.secondary:hover {
   background: var(--color-surface-raised);
-  border-color: var(--color-brand);
+  border-color: var(--color-text-muted);
 }
 
 .btn.full-width {

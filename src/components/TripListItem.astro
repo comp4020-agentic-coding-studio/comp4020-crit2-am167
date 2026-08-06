@@ -1,4 +1,5 @@
 ---
+import RouteChip from "./RouteChip.astro";
 import { formatCents } from "../lib/format";
 import type { Trip } from "../lib/fixtures";
 
@@ -8,7 +9,7 @@ interface Props {
 
 const { trip } = Astro.props;
 
-const modeLabel = trip.mode === "bus" ? "Bus" : "Light rail";
+const routeLabel = trip.mode === "bus" ? trip.route : "Light rail";
 const fareTypeLabel: Record<Trip["fareType"], string> = {
   peak: "Peak",
   "off-peak": "Off-peak",
@@ -19,8 +20,7 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
 
 <li class="trip-item" data-mode={trip.mode}>
   <div class="trip-item__main">
-    <span class="trip-item__mode">{modeLabel}</span>
-    <span class="trip-item__route">{trip.route}</span>
+    <RouteChip mode={trip.mode} label={routeLabel} />
     <span class="trip-item__stops">{trip.from} → {trip.to}</span>
   </div>
   <div class="trip-item__meta">
@@ -46,38 +46,18 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
   }
 
   .trip-item[data-mode="bus"] {
-    border-left-color: var(--color-mode-bus);
+    border-left-color: var(--color-bus);
   }
 
   .trip-item[data-mode="light-rail"] {
-    border-left-color: var(--color-mode-tram);
+    border-left-color: var(--color-rail);
   }
 
   .trip-item__main {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--space-3);
     flex-wrap: wrap;
-  }
-
-  .trip-item__mode {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    font-weight: 700;
-    color: var(--color-text-muted);
-  }
-
-  .trip-item[data-mode="bus"] .trip-item__mode {
-    color: var(--color-mode-bus);
-  }
-
-  .trip-item[data-mode="light-rail"] .trip-item__mode {
-    color: var(--color-mode-tram);
-  }
-
-  .trip-item__route {
-    font-weight: 600;
   }
 
   .trip-item__stops {
@@ -103,5 +83,6 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
 
   .trip-item__fare {
     font-weight: 600;
+    font-family: var(--font-display);
   }
 </style>

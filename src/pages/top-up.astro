@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AmountChip from "../components/AmountChip.astro";
+import { FARE_TABLE } from "../lib/fixtures";
 
 const presetAmounts = [10, 20, 50, 100];
 ---
@@ -41,6 +42,12 @@ const presetAmounts = [10, 20, 50, 100];
         >Back to dashboard</a
       >
     </div>
+
+    <p class="top-up-fares-note">
+      Adult fares run ${FARE_TABLE.adult.offPeak.toFixed(2)} off-peak to $
+      {FARE_TABLE.adult.peak.toFixed(2)} at peak, current as of{" "}
+      {FARE_TABLE.effectiveFrom}.
+    </p>
   </section>
 </BaseLayout>
 
@@ -134,5 +141,13 @@ const presetAmounts = [10, 20, 50, 100];
 
   .top-up-status .btn {
     margin-top: var(--space-4);
+  }
+
+  .top-up-fares-note {
+    margin: var(--space-5) 0 0;
+    padding-top: var(--space-4);
+    border-top: var(--border-width) solid var(--color-border);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
   }
 </style>

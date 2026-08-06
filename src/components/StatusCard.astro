@@ -38,15 +38,15 @@ const { status, label, detail, href, linkText, dataRole } = Astro.props;
   }
 
   .status-card[data-status="active"] {
-    border-left-color: var(--color-success);
+    border-left-color: var(--color-status);
   }
 
   .status-card[data-status="expiring"] {
-    border-left-color: var(--color-warning);
+    border-left-color: var(--color-caution);
   }
 
   .status-card[data-status="expired"] {
-    border-left-color: var(--color-danger);
+    border-left-color: var(--color-text-dim);
   }
 
   .status-card__label {
