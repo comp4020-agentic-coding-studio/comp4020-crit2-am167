@@ -180,3 +180,14 @@ between them dropped entirely --- not collapsed to one space, gone --- so it
 rendered as "is$62.30" with no space at all. `{" "}` before the tag is the
 explicit fix; worth checking for anywhere else text flows into a tag across
 a line break.
+
+### Milestone 6: trip history
+
+Kept this deliberately plain per the scope note above: `TripListItem.astro`
+(text mode label, route, stops, a fare-type badge, tabular-nums fare) and
+`trips.astro` grouping the fixture trips by date with a `Map`, no
+date-range/page-size controls. No icons either --- a text label ("Bus" /
+"Light rail") does the same job as the plan's inline-SVG icon set without
+adding three more components for a page this small. Checked both viewports;
+the row layout wraps cleanly at 390px without needing separate mobile
+markup.

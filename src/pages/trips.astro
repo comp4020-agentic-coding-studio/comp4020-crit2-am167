@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TripListItem from "../components/TripListItem.astro";
+import { SAMPLE_TRIPS } from "../lib/fixtures";
+import { formatDate } from "../lib/format";
+
+const byDate = new Map<string, typeof SAMPLE_TRIPS>();
+for (const trip of SAMPLE_TRIPS) {
+  const list = byDate.get(trip.date) ?? [];
+  list.push(trip);
+  byDate.set(trip.date, list);
+}
+const days = Array.from(byDate.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
+---
+
+<BaseLayout title="Trip history">
+  <h1>Trip history</h1>
+  <p class="trips-lede">Your recent journeys, grouped by day.</p>
+  {
+    days.map(([date, trips]) => (
+      <section class="trip-day">
+        <h2>{formatDate(date)}</h2>
+        <ul class="trip-list">
+          {trips.map((trip) => (
+            <TripListItem trip={trip} />
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</BaseLayout>
+
+<style>
+  .trips-lede {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  .trip-day {
+    margin-bottom: var(--space-6);
+  }
+
+  .trip-day h2 {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-3);
+  }
+
+  .trip-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+</style>
