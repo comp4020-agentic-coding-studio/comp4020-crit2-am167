@@ -1,18 +1,121 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { FARE_TABLE } from "../lib/fixtures";
+
+const fareSummary = `$${FARE_TABLE.adult.offPeak.toFixed(2)} off-peak to $${FARE_TABLE.adult.peak.toFixed(2)} at peak (concession from $${FARE_TABLE.concession.offPeak.toFixed(2)} to $${FARE_TABLE.concession.peak.toFixed(2)})`;
 ---
 
-<BaseLayout title="COMP4020 prototype">
-  <h1>COMP4020 prototype</h1>
-  <p data-testid="intro">
-    Replace this with your prototype. This week's brief is on the course website;
-    <code>spec/README.md</code> explains how the checks in this repo relate to it.
-  </p>
+<BaseLayout title="Home">
+  <section class="hero">
+    <h1>The MyWay+ account, redesigned</h1>
+    <p class="lede">
+      Transport Canberra's MyWay+ replaced the old MyWay card in late 2024,
+      promising simpler ticketing, real-time journey planning and more ways
+      to pay. This is a concept redesign of the part riders actually deal
+      with every week — the account portal — built around what the launch
+      didn't deliver.
+    </p>
+    <a class="cta" href="./dashboard/">See the redesigned dashboard →</a>
+  </section>
+
+  <section>
+    <h2>Why this needed a rebuild</h2>
+    <p>
+      MyWay+ went live on 27 November 2024 after Transport Canberra's own
+      review predicted a "sub-optimal but functional" result. Validators
+      failed at major interchanges on day one, an overcharging incident
+      forced NEC to audit every transaction since launch, and a Legislative
+      Assembly inquiry later found the system "clearly not ready for
+      launch." Independent reporting still described it as broken more than
+      a year on.
+    </p>
+    <p>
+      The account app carries its own share of the problem. Its most-cited
+      complaint, echoed across hundreds of reviews, isn't a missing feature
+      — it's that "account management" just opens an embedded browser
+      pointed at the same web portal, instead of showing your balance, QR
+      pass or trip history natively. This redesign starts from that specific
+      complaint: a dashboard, top-up, trip history and settings that are
+      part of the app, not a webview bolted onto it.
+    </p>
+  </section>
+
+  <section>
+    <h2>What the real system is meant to do</h2>
+    <p>
+      Transport Canberra frames MyWay+ as a step toward accessible,
+      flexible, reliable and sustainable transport for Canberra — ticketing
+      simple enough that it gets more people onto buses and light rail
+      instead of driving. That's a mission worth taking seriously even where
+      the execution hasn't matched it, so this redesign keeps the real fares
+      and rebuilds the interface around them: adult fares run from{" "}
+      {fareSummary}, current as of {FARE_TABLE.effectiveFrom}.
+    </p>
+  </section>
+
+  <section class="disclosure">
+    <h2>About this prototype</h2>
+    <p>
+      This is a static, non-functional demo built for a university course —
+      not an official Transport Canberra or ACT Government product. Signing
+      in doesn't check a real password, and the balance, trip history and
+      concession status you'll see are invented sample data to demonstrate
+      the interface. The fares, concession categories and contact
+      information are the real, current MyWay+ ones, restated in plain
+      language rather than copied from the source.
+    </p>
+  </section>
 </BaseLayout>
 
-<script>
-  const intro = document.querySelector<HTMLElement>('[data-testid="intro"]');
-  if (intro) {
-    intro.dataset.ready = "true";
+<style>
+  .hero {
+    padding-block: var(--space-6) var(--space-7);
+    max-width: 42rem;
   }
-</script>
+
+  h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-4);
+  }
+
+  .lede {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  .cta {
+    display: inline-block;
+    background: var(--color-brand);
+    color: var(--color-brand-contrast);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cta:hover {
+    background: var(--color-brand-strong);
+    color: var(--color-brand-contrast);
+  }
+
+  section {
+    padding-block: var(--space-6);
+    border-top: var(--border-width) solid var(--color-border);
+    max-width: 42rem;
+  }
+
+  section h2 {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-3);
+  }
+
+  section p {
+    margin-bottom: var(--space-3);
+  }
+
+  .disclosure {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+</style>

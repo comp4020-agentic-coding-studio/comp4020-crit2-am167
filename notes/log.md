@@ -86,3 +86,23 @@ matters: this was invisible to typecheck/build/lint and would have shipped.
 Verified in real Chrome at both 1920x1080 and 390x844 (measured
 `scrollWidth === clientWidth`, not just eyeballed) before treating the
 milestone as done.
+
+### Milestone 2: landing + content layer
+
+Added `src/lib/fixtures.ts`: the real Jan 2026 fare table, the six real
+concession categories (all expiring 30 Jun 2026 except ACT Seniors), and a
+set of invented sample trips using real route numbers and light rail stops
+--- commented clearly as fabricated demo data, not real trip records, so the
+real-vs-fictional line stays visible in the source, not just in my head.
+
+Rewrote `index.astro`: real critique (the Nov 2024 launch failures, the
+inquiry finding, the webview complaint from reviews) instead of the starter
+placeholder, the real fare figures, and a disclosure section stating plainly
+that this is a non-functional prototype with invented account data. Deleted
+`spec/starter.test.ts` (its target, `data-testid="intro"`, is gone) and added
+`spec/redesign.test.ts` with the two checks this milestone's content
+actually supports: every nav link stays relative, and at least one page
+states the real fares. Held off adding the concession-catalogue test from
+the plan's milestone-2 list since `concession.astro` doesn't exist until
+milestone 7 --- a test that can't be satisfied by any current content would
+just be a red `pnpm check` for no reason; tests track features as they land.
