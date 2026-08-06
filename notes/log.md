@@ -528,3 +528,29 @@ decluttered last round).
   real Chrome via `pnpm preview`: no horizontal overflow at 390px, the three
   "manage something" pages now read as one pattern, the live map's nav link
   and mobile menu both resolve correctly.
+
+## 2026-08-06 --- transport utility visual pass
+
+Created `ui/transport-dashboard-redesign` from a clean `main` to apply the
+dashboard critique. Shifted the palette from dark fintech to a calm,
+wayfinding-first light system; made navigation single-row on desktop with
+active-page states; added a prominent next-departure hero; moved balance and
+account settings into secondary positions; reduced shadow and radius
+repetition; and added an honest demo-feed timestamp to live departures.
+Kept bus blue, rail red, and status green semantic so the redesign remains
+legible rather than decorative.
+
+`pnpm check` initially stopped at two stylelint colour-hex-length errors, then
+passed after normalising the new white tokens: typecheck, static build, oxlint,
+stylelint, and all 190 tests are green. The first sandboxed test run also
+confirmed the only failure was its temporary-directory restriction around
+`git init`, not the implementation.
+
+Added a reduced-motion-aware pulse to the green `Live` indicator in the
+next-departure hero, using the existing status colour and keeping the separate
+`On time` marker static so the two states do not compete.
+
+Replaced the placeholder `M` wordmark with the official MyWay+ app mark from
+Transport Canberra and City Services' Google Play listing, stored locally as
+`public/assets/myway-plus-app-icon.webp`. Added a direct footer link to the
+official MyWay+ account portal.

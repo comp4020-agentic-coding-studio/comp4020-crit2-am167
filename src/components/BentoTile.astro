@@ -15,15 +15,17 @@ const { size = "medium" } = Astro.props;
     background: var(--color-surface);
     border: var(--border-width) solid var(--color-border);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
+    box-shadow: none;
     padding: var(--space-5);
   }
 
   .bento-tile--hero {
+    border-color: var(--color-border-hero);
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, white 6%, var(--color-surface)),
-      var(--color-surface)
+      var(--color-surface),
+      var(--color-surface-hero)
     );
+    box-shadow: var(--shadow-card);
   }
 </style>

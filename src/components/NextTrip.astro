@@ -1,0 +1,198 @@
+---
+import RouteChip from "./RouteChip.astro";
+import type { Departure } from "../lib/fixtures";
+
+interface Props {
+  departure: Departure;
+  up: string;
+}
+
+const { departure, up } = Astro.props;
+const etaLabel = departure.etaMinutes === 0 ? "Now" : `${departure.etaMinutes} min`;
+const etaDescription =
+  departure.etaMinutes === 0 ? "departing now" : "until departure";
+const routeLabel = departure.mode === "bus" ? departure.route : "Light rail";
+const statusLabel =
+  departure.status === "on-time"
+    ? "On time"
+    : `Delayed ${departure.delayMinutes} min`;
+---
+
+<article class="next-trip" data-mode={departure.mode}>
+  <div class="next-trip__eyebrow">
+    <p>Next departure</p>
+    <span class="next-trip__live">
+      <span aria-hidden="true"></span>
+      Live
+    </span>
+  </div>
+
+  <div class="next-trip__route">
+    <RouteChip mode={departure.mode} label={routeLabel} />
+    <div>
+      <h2>{departure.headsign}</h2>
+      <p>Leaving from City Interchange</p>
+    </div>
+  </div>
+
+  <div class="next-trip__eta">
+    <strong class="tabular-nums">{etaLabel}</strong>
+    <span>{etaDescription}</span>
+  </div>
+
+  <div class="next-trip__footer">
+    <span class="next-trip__status" data-status={departure.status}>
+      <span aria-hidden="true"></span>
+      {statusLabel}
+    </span>
+    <a class="btn primary" href={`${up}live-map/`}>Open live map</a>
+  </div>
+</article>
+
+<style>
+  .next-trip {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding-left: var(--space-4);
+    border-left: 4px solid var(--color-rail);
+  }
+
+  .next-trip[data-mode="bus"] {
+    border-left-color: var(--color-bus);
+  }
+
+  .next-trip__eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .next-trip__eyebrow p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .next-trip__live {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-status);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .next-trip__live span,
+  .next-trip__status span {
+    width: 0.45rem;
+    height: 0.45rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .next-trip__live span {
+    animation: next-trip-live-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes next-trip-live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 var(--color-status-bg);
+    }
+
+    50% {
+      opacity: 0.45;
+      box-shadow: 0 0 0 0.25rem var(--color-status-bg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .next-trip__live span {
+      animation: none;
+    }
+  }
+
+  .next-trip__route {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .next-trip__route h2 {
+    margin: 0;
+    font-size: var(--text-2xl);
+  }
+
+  .next-trip__route p {
+    margin: var(--space-1) 0 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .next-trip__eta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-top: var(--space-2);
+  }
+
+  .next-trip__eta strong {
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    line-height: 1;
+  }
+
+  .next-trip__eta span {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .next-trip__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: auto;
+    padding-top: var(--space-3);
+    border-top: var(--border-width) solid var(--color-border);
+  }
+
+  .next-trip__status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .next-trip__status[data-status="on-time"] {
+    color: var(--color-status);
+  }
+
+  .next-trip__status[data-status="delayed"] {
+    color: var(--color-caution);
+  }
+
+  @media (max-width: 640px) {
+    .next-trip__footer {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .next-trip__footer .btn {
+      width: 100%;
+    }
+  }
+</style>

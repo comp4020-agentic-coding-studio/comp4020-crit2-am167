@@ -51,10 +51,51 @@ const navLinks = [
   <body>
     <header class="site-header">
       <div class="site-header__bar">
-        <a class="wordmark" href={up}>
-          <span class="wordmark__mark">M</span>
-          yWay+
+        <a class="wordmark" href={up} aria-label="MyWay+ home">
+          <img
+            class="wordmark__logo"
+            src={`${up}assets/myway-plus-app-icon.webp`}
+            alt="MyWay+"
+            width="112"
+            height="36"
+          />
         </a>
+        <nav aria-label="Primary" class="primary-nav">
+          <div id="primary-nav-panel" class="primary-nav__panel">
+            <ul class="primary-nav__links">
+              {
+                navLinks.map((link) => (
+                  <li>
+                    <a
+                      class:list={[link.label === title && "is-current"]}
+                      href={link.href}
+                      aria-current={link.label === title ? "page" : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <ul class="primary-nav__auth">
+              {
+                loggedIn ? (
+                  <li class="account-chip">
+                    <span class="account-chip__avatar" aria-hidden="true">
+                      {ACCOUNT_NAME.charAt(0)}
+                    </span>
+                    <span class="account-chip__name">{ACCOUNT_NAME}</span>
+                  </li>
+                ) : (
+                  <>
+                    <li><a href={`${up}login/`}>Log in</a></li>
+                    <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
+                  </>
+                )
+              }
+            </ul>
+          </div>
+        </nav>
         <div class="site-header__actions">
           <button
             type="button"
@@ -67,36 +108,6 @@ const navLinks = [
           </button>
         </div>
       </div>
-      <nav aria-label="Primary" class="primary-nav">
-        <div id="primary-nav-panel" class="primary-nav__panel">
-          <ul class="primary-nav__links">
-            {
-              navLinks.map((link) => (
-                <li>
-                  <a href={link.href}>{link.label}</a>
-                </li>
-              ))
-            }
-          </ul>
-          <ul class="primary-nav__auth">
-            {
-              loggedIn ? (
-                <li class="account-chip">
-                  <span class="account-chip__avatar" aria-hidden="true">
-                    {ACCOUNT_NAME.charAt(0)}
-                  </span>
-                  <span class="account-chip__name">{ACCOUNT_NAME}</span>
-                </li>
-              ) : (
-                <>
-                  <li><a href={`${up}login/`}>Log in</a></li>
-                  <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
-                </>
-              )
-            }
-          </ul>
-        </div>
-      </nav>
     </header>
     <main class:list={[wide && "main-wide"]}>
       <slot />
@@ -108,6 +119,14 @@ const navLinks = [
           For the real thing, call <strong>13&nbsp;17&nbsp;10</strong> or
           contact Access Canberra.
         </p>
+        <a
+          class="site-footer__official-link"
+          href="https://www.mywayplus.transport.act.gov.au/login"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Visit the official MyWay+ website ↗
+        </a>
       </div>
     </footer>
     <script>
@@ -128,7 +147,7 @@ const navLinks = [
     top: 0;
     z-index: 10;
     border-bottom: var(--border-width) solid var(--color-border);
-    background: rgb(13 15 20 / 72%);
+    background: rgb(255 255 255 / 92%);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
@@ -137,9 +156,9 @@ const navLinks = [
     max-width: 96rem;
     margin: 0 auto;
     padding: var(--space-4) var(--space-5);
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-4);
   }
 
@@ -153,17 +172,12 @@ const navLinks = [
     gap: var(--space-2);
   }
 
-  .wordmark__mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: var(--radius-sm);
-    background: var(--color-action);
-    color: var(--color-action-contrast);
-    font-family: var(--font-display);
-    font-size: var(--text-sm);
+  .wordmark__logo {
+    display: block;
+    width: 7rem;
+    height: 2.25rem;
+    object-fit: cover;
+    object-position: center;
   }
 
   .site-header__actions {
@@ -182,13 +196,15 @@ const navLinks = [
     font-size: var(--text-sm);
   }
 
+  .primary-nav {
+    min-width: 0;
+  }
+
   .primary-nav__panel {
     display: none;
     flex-direction: column;
     gap: var(--space-4);
-    max-width: 96rem;
-    margin: 0 auto;
-    padding: 0 var(--space-5) var(--space-4);
+    min-width: 0;
   }
 
   .primary-nav__panel.is-open {
@@ -219,6 +235,12 @@ const navLinks = [
   .primary-nav__auth a:hover {
     background: var(--color-surface-raised);
     color: var(--color-action-hover);
+  }
+
+  .primary-nav__links a.is-current {
+    background: var(--color-surface-raised);
+    color: var(--color-action-hover);
+    font-weight: 700;
   }
 
   .primary-nav__auth a.is-primary {
@@ -264,7 +286,40 @@ const navLinks = [
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      padding: 0 var(--space-5) var(--space-4);
+      gap: var(--space-3);
+    }
+
+    .primary-nav__links {
+      justify-content: center;
+    }
+
+    .primary-nav__auth {
+      justify-content: flex-end;
+    }
+  }
+
+  @media (max-width: 719px) {
+    .primary-nav {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .primary-nav__panel {
+      padding-top: var(--space-2);
+    }
+
+    .primary-nav__links a,
+    .primary-nav__auth a {
+      width: 100%;
+    }
+
+    .primary-nav__links li,
+    .primary-nav__auth li {
+      flex: 1 1 9rem;
+    }
+
+    .account-chip {
+      padding-left: var(--space-3);
     }
   }
 
@@ -279,5 +334,12 @@ const navLinks = [
     padding: var(--space-5);
     color: var(--color-text-muted);
     font-size: var(--text-xs);
+  }
+
+  .site-footer__official-link {
+    display: inline-block;
+    margin-top: var(--space-2);
+    color: var(--color-text);
+    font-weight: 700;
   }
 </style>
