@@ -90,3 +90,17 @@ describe("redesign: dashboard shows a balance", () => {
     ).toBe(true);
   });
 });
+
+describe("redesign: top-up offers preset amounts, not a bare field", () => {
+  it("top-up/index.html renders multiple preset amount chips", () => {
+    const topUp = pages.find(({ name }) => name === "top-up/index.html");
+    expect(topUp, "expected a built top-up page at top-up/index.html").toBeTruthy();
+    if (!topUp) return;
+
+    const chips = topUp.doc.querySelectorAll("[data-amount]");
+    expect(
+      chips.length,
+      "expected multiple preset amount chips, not just a bare numeric field",
+    ).toBeGreaterThanOrEqual(3);
+  });
+});

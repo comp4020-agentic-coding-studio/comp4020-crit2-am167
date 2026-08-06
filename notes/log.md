@@ -154,3 +154,29 @@ purely JS-injected). `StatusCard` stays a dumb presentational component and
 doesn't know about `demoState` itself; the page passes it a `dataRole` and
 does the live update itself, since the two dashboard instances (auto top-up,
 concession) need different update logic.
+
+### Milestone 5: top-up flow
+
+Added `AmountChip.astro` and `top-up.astro`: preset amount chips instead of
+a bare numeric field, and a deliberately non-instant confirmation (an
+~800ms-1s "Processing…" state before showing the new balance) --- the real
+system's validator/overcharging failures mean an instantly-updated balance
+would read as unverified, not fast. Verified the full loop by hand in Chrome:
+select $20, submit, watch the processing state, land on a success screen
+with the correct new balance, follow "Back to dashboard," and see that same
+balance reflected there --- the one cross-page state dependency this plan
+flagged as impractical to assert in JSDOM.
+
+Advay flagged the build was scoping past what a one-week crit needs. Cutting
+back for the remaining milestones: trip history becomes a plain grouped
+list, no date-range/pagination controls; auto top-up and concession stay
+single-purpose forms; the "Polish" milestone becomes one final check-and-
+verify pass instead of an exhaustive per-page audit.
+
+Also fixed a genuine Astro compiler quirk while checking the success screen
+in the browser: `Top-up complete. Your new balance is\n<strong>...` (text
+ending a line, then a nested tag on the next) compiles with the whitespace
+between them dropped entirely --- not collapsed to one space, gone --- so it
+rendered as "is$62.30" with no space at all. `{" "}` before the tag is the
+explicit fix; worth checking for anywhere else text flows into a tag across
+a line break.
