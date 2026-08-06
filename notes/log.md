@@ -318,3 +318,132 @@ the pattern never matched. One of those zombies (the very first `pnpm dev`
 from hours earlier) is almost certainly the exact server the 404 screenshot
 was taken against. Used `astro dev stop` for the persistent dev daemon and
 killed the rest by PID.
+
+### Milestone 11: full redesign — dark fintech dashboard, real Transport Canberra livery
+
+Advay rejected the whole art direction from milestone 9 outright: wanted a
+logged-in fintech dashboard (Revolut/Robinhood register), not a marketing
+landing page, and wanted the mode colours to be Transport Canberra's *actual*
+livery rather than an invented brand colour. Researched this before touching
+code rather than guessing: web search confirmed Transport Canberra buses run
+blue livery and light rail runs red livery (2016 rebrand, sources cited in
+chat), and that Light Rail Stage 1 has 14 real stops Gungahlin Place →
+Alinga Street, City (including the 2021-added Sandford Street stop) — used
+that exact list, in order, for the new `LineDiagram` signature element
+(`src/lib/fixtures.ts` `LIGHT_RAIL_LINE`, `src/components/LineDiagram.astro`).
+
+Biggest judgement call: the brief says "use blue/red as functional colour
+coding throughout... every use of red or blue should tell the user which mode
+they're looking at." Taken literally, that rules out using either hue for
+*anything* generic — so primary buttons, links, focus rings, the wordmark,
+and chip-selected states could no longer be purple (obviously) but also
+couldn't just become blue instead, since blue is now reserved. Made every
+non-mode, non-status interactive surface strictly neutral (near-white
+`--color-action` on near-black) instead of picking a new "safe" brand hue.
+Chose green as the one status accent (kept a secondary amber for
+"delayed/expiring" only) so it never collides with mode meaning; deliberately
+did *not* bring the old `--color-danger` red-adjacent token forward, since a
+literal red for "expired" would have contradicted "red always means light
+rail" the moment both appeared in the same view.
+
+Rebuilt the token system (`src/styles/tokens.css`) from scratch rather than
+patching hex values in place, deleted the purple `--color-brand*` family
+entirely, renamed `--color-mode-bus`/`--color-mode-tram` to `--color-bus`/
+`--color-rail`, and added the `--color-status`/`--color-caution` pair.
+Added `--font-display` (Space Grotesk, loaded via Google Fonts link in
+`BaseLayout`) for headings and tabular numbers, kept the system-font stack
+for body copy — applied display face globally via `h1,h2,h3` in
+`global.css` rather than sprinkling `font-family` overrides per component.
+
+Deleted the landing page as asked: extracted the whole dashboard into one
+shared `src/components/DashboardView.astro` and made both `index.astro` and
+`dashboard.astro` render it (kept `/dashboard/` alive, not just `/`, since
+`spec/redesign.test.ts` and the nav both depend on that exact route
+existing — collapsing to a single URL would've meant either breaking the
+spec test or ripping out the nav's own "Dashboard" link). New dashboard
+layout: balance+top-up card top-left, compact auto-top-up/concession status
+chips top-right, live departures (colour-coded `RouteChip` bus/rail pills +
+green "on time"/amber "delayed" status), recent trips, and a persistent
+right-hand rail — the `LineDiagram` — that runs the full column height via
+CSS grid named areas, which is what actually solves "no empty right-hand
+space" structurally rather than by eyeballing it.
+
+Widened `<main>` for the two dashboard routes only (new `wide` prop on
+`BaseLayout`, `.main-wide` class, 96rem vs the original 72rem) rather than
+widening every page — a 1920px-wide bus/light-rail data dashboard needs the
+space; a login form or settings card doesn't.
+
+The old landing page was the only place stating the real fares (3.41 peak /
+2.70 off-peak), which `spec/redesign.test.ts`'s "real fare content" test
+depends on — moved that line to `top-up.astro` as a footnote under the
+amount picker instead of dropping it, since that's the page where a real
+fare figure is actually contextually useful, not a design orphan surviving
+only to satisfy a test.
+
+`pnpm check`: typecheck, build, oxlint, stylelint and all 87 spec tests
+green after two stylelint auto-fixes (hex length, blank-line-before-custom-
+property) and one manual rename (`.main--wide` → `.main-wide` — stylelint's
+kebab-case rule rejects BEM-style double hyphens in real `.css` files, which
+is why the identical `bento-tile--hero` pattern elsewhere never tripped it —
+that one lives in an `.astro` `<style>` block, which the `**/*.css` glob
+never touches). Kicked off a 5-dimension adversarial review workflow (stray
+purple, mode/status colour-semantic correctness, contrast arithmetic,
+structural/spec-link checks, real-data accuracy against the researched stop
+list) before calling this done.
+
+The review workflow earned its keep — two dimensions came back clean
+(no leftover purple, no mode/status colour misuse) but two came back with
+real, specific findings I wouldn't have caught by eye:
+
+Contrast: `--color-text-dim` (#5f6773) as real label text for "passed" stops
+in the line diagram measured 3.14:1 against its panel — under the 4.5:1 AA
+floor for normal text (the agent showed its luminance arithmetic rather than
+just asserting it, which is what made it worth trusting over an eyeball
+check). Same token had the identical problem in `top-up.astro`'s fare
+footnote. Fixed both by moving to `--color-text-muted` (~6:1), which was
+already used elsewhere and already known-good, rather than hand-tuning a new
+hex. Bigger finding: `RouteChip`'s original design (tinted 14%-opacity mode
+colour as background, full-strength mode colour as text) measured 3.95:1
+(bus) and 4.16:1 (rail) — both short of 4.5:1 for the chip's bold 12px
+label. Tried shrinking the tint to raise contrast first; the arithmetic
+showed that only converges on 4.5:1 as the tint approaches zero, i.e. the
+chip stops looking like a coloured badge at all. Replaced the whole approach
+with a solid mode-colour fill and near-black text instead of tint+coloured-
+text — measures ~4.9–5.1:1 with real margin, and arguably reads as a
+stronger "badge" than the subtle version did. Also found the line diagram's
+"not yet reached" stop ring was using `opacity: 0.5` on the whole dot
+(border + fill) to fake a dimmer state, which reviewer math showed drops to
+~2:1 against the panel — under the 3:1 floor for meaningful non-text
+graphics. Fixed by dropping the opacity trick entirely: passed = solid
+fill, next = green pulse, not-yet-reached = a full-opacity hollow ring —
+three genuinely distinct states instead of one faked with transparency.
+
+Real-data accuracy: the reviewer caught that `SAMPLE_TRIPS` (written before
+this session, for last week's landing page) has a light-rail trip ending at
+"Mitchell" — not an actual Light Rail Stage 1 stop; Mitchell is bus-served,
+not rail-served, in reality. Fixed by rerouting that trip to "Phillip
+Avenue" (the real adjacent stop after EPIC and Racecourse). It also flagged
+that the same fixture file's shorthand stop names ("Alinga Street",
+"Manning Clark", "Dickson") didn't match the canonical full names now
+established by `LIGHT_RAIL_LINE` ("Alinga Street, City", "Manning Clark
+North", "Dickson Interchange") — cosmetic on its own, but the inconsistency
+would've been visible on the same dashboard as the correctly-named line
+diagram. Normalised every trip fixture to the canonical names.
+
+Caught one more bug myself during the final Chrome pass that the review
+workflow's dimensions didn't cover (none of them ran the page at a mobile
+viewport): `document.documentElement.scrollWidth` (1593) didn't match
+`clientWidth` (390) on the dashboard at 390×844 — real horizontal page
+overflow, invisible in a plain screenshot because the content still rendered
+"fine" within the captured frame. Root cause was the classic CSS grid/flex
+gotcha — grid and flex items default to `min-width: auto`, so the line
+diagram's horizontal-scroll stop strip (14 stops wide) was forcing its
+*ancestors* wider instead of scrolling within its own `overflow-x: auto`
+box. Fixed with `min-width: 0` on the dashboard's grid items and on the
+scroll strip itself. Verified properly this time: measured
+`scrollWidth === clientWidth === 390` on the outer document, then confirmed
+the diagram's own scroll region still has `scrollWidth (1516) > clientWidth
+(292)` and that `scrollLeft` actually moves — contained overflow where it
+should be, none where it shouldn't. This is exactly the "measure, don't
+eyeball" instruction in `CLAUDE.md` earning its keep: the screenshot alone
+would have shipped this bug.

@@ -1,0 +1,276 @@
+---
+import BentoTile from "./BentoTile.astro";
+import BalanceCard from "./BalanceCard.astro";
+import StatusCard from "./StatusCard.astro";
+import DepartureListItem from "./DepartureListItem.astro";
+import TripListItem from "./TripListItem.astro";
+import LineDiagram from "./LineDiagram.astro";
+import {
+  DEFAULT_AUTO_TOP_UP,
+  DEFAULT_CONCESSION,
+} from "../lib/demo-state";
+import { CONCESSION_TYPES, DEPARTURES, SAMPLE_TRIPS } from "../lib/fixtures";
+import { formatCents, formatDate } from "../lib/format";
+
+const recentTrips = SAMPLE_TRIPS.slice(0, 4);
+
+const concessionType = CONCESSION_TYPES.find(
+  (type) => type.id === DEFAULT_CONCESSION.typeId,
+);
+const concessionDetail = concessionType
+  ? `${concessionType.name} — active until ${formatDate(DEFAULT_CONCESSION.expiry)}`
+  : "No concession on file";
+
+const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
+  ? `On — tops up to ${formatCents(DEFAULT_AUTO_TOP_UP.targetCents)} below ${formatCents(DEFAULT_AUTO_TOP_UP.thresholdCents)}`
+  : "Off — you'll need to top up manually";
+---
+
+<div class="dashboard">
+  <h1 class="visually-hidden">Dashboard</h1>
+
+  <section class="dashboard__primary">
+    <BentoTile size="hero">
+      <BalanceCard />
+    </BentoTile>
+    <div class="dashboard__status-stack">
+      <BentoTile>
+        <StatusCard
+          dataRole="auto-top-up-status"
+          status={DEFAULT_AUTO_TOP_UP.enabled ? "active" : "off"}
+          label="Auto top-up"
+          detail={autoTopUpDetail}
+          href="../auto-top-up/"
+          linkText="Manage auto top-up"
+        />
+      </BentoTile>
+      <BentoTile>
+        <StatusCard
+          dataRole="concession-status"
+          status="active"
+          label="Concession"
+          detail={concessionDetail}
+          href="../concession/"
+          linkText="Manage concession"
+        />
+      </BentoTile>
+    </div>
+  </section>
+
+  <section class="dashboard__departures">
+    <BentoTile>
+      <div class="dashboard__section-head">
+        <h2>Live departures</h2>
+        <span class="dashboard__live-badge">
+          <span class="dashboard__live-dot" aria-hidden="true"></span>
+          Live
+        </span>
+      </div>
+      <ul class="departures-list">
+        {
+          DEPARTURES.map((departure) => (
+            <DepartureListItem departure={departure} />
+          ))
+        }
+      </ul>
+    </BentoTile>
+  </section>
+
+  <section class="dashboard__history">
+    <BentoTile>
+      <div class="dashboard__section-head">
+        <h2>Recent trips</h2>
+        <a href="../trips/">See all trip history →</a>
+      </div>
+      <ul class="trips-list">
+        {recentTrips.map((trip) => <TripListItem trip={trip} />)}
+      </ul>
+    </BentoTile>
+  </section>
+
+  <aside class="dashboard__line">
+    <LineDiagram />
+  </aside>
+</div>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import { CONCESSION_TYPES } from "../lib/fixtures";
+  import { formatCents, formatDate } from "../lib/format";
+
+  const autoTopUp = demoState.getAutoTopUp();
+  const autoTopUpCard = document.querySelector<HTMLElement>(
+    '[data-role="auto-top-up-status"]',
+  );
+  const autoTopUpDetailEl = document.querySelector<HTMLElement>(
+    '[data-role="auto-top-up-status-detail"]',
+  );
+  if (autoTopUpCard && autoTopUpDetailEl) {
+    autoTopUpCard.dataset.status = autoTopUp.enabled ? "active" : "off";
+    autoTopUpDetailEl.textContent = autoTopUp.enabled
+      ? `On — tops up to ${formatCents(autoTopUp.targetCents)} below ${formatCents(autoTopUp.thresholdCents)}`
+      : "Off — you'll need to top up manually";
+  }
+
+  const concession = demoState.getConcession();
+  const concessionType = CONCESSION_TYPES.find(
+    (type) => type.id === concession.typeId,
+  );
+  const concessionDetailEl = document.querySelector<HTMLElement>(
+    '[data-role="concession-status-detail"]',
+  );
+  if (concessionDetailEl) {
+    concessionDetailEl.textContent = concessionType
+      ? `${concessionType.name} — active until ${formatDate(concession.expiry)}`
+      : "No concession on file";
+  }
+</script>
+
+<style>
+  .dashboard {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    grid-template-areas:
+      "primary line"
+      "departures line"
+      "history line";
+    align-items: start;
+  }
+
+  .dashboard__primary,
+  .dashboard__departures,
+  .dashboard__history,
+  .dashboard__line {
+    /* Grid items default to min-width: auto, which lets the line diagram's
+       intrinsic content width (14 stops) push the whole page wider on
+       narrow viewports instead of scrolling within its own box. */
+    min-width: 0;
+  }
+
+  .dashboard__primary {
+    grid-area: primary;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+
+  .dashboard__status-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  .dashboard__departures {
+    grid-area: departures;
+  }
+
+  .dashboard__history {
+    grid-area: history;
+  }
+
+  .dashboard__line {
+    grid-area: line;
+    position: sticky;
+    top: var(--space-6);
+    height: calc(100vh - var(--space-8));
+  }
+
+  .dashboard__line :global(.line-diagram) {
+    height: 100%;
+  }
+
+  .dashboard__section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .dashboard__section-head h2 {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .dashboard__section-head a {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .dashboard__section-head a:hover {
+    color: var(--color-action-hover);
+  }
+
+  .dashboard__live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-status);
+  }
+
+  .dashboard__live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-status);
+    animation: dashboard-live-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes dashboard-live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard__live-dot {
+      animation: none;
+    }
+  }
+
+  .departures-list,
+  .trips-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 1023px) {
+    .dashboard {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "primary"
+        "departures"
+        "line"
+        "history";
+    }
+
+    .dashboard__primary {
+      grid-template-columns: 1fr;
+    }
+
+    .dashboard__line {
+      position: static;
+      height: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dashboard__status-stack {
+      flex-direction: column;
+    }
+  }
+</style>

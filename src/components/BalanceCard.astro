@@ -10,6 +10,10 @@ const fallback = formatCents(DEFAULT_BALANCE_CENTS);
   <p class="balance-card__amount tabular-nums" id="balance-amount">
     {fallback}
   </p>
+  <p class="balance-card__delta">
+    <span class="balance-card__delta-dot" aria-hidden="true"></span>
+    +$20.00 top-up · 3 Aug
+  </p>
   <a href="../top-up/" class="btn primary">Top up</a>
 </div>
 
@@ -37,9 +41,27 @@ const fallback = formatCents(DEFAULT_BALANCE_CENTS);
   }
 
   .balance-card__amount {
-    font-size: var(--text-3xl);
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
     font-weight: 700;
     margin: 0;
+  }
+
+  .balance-card__delta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: -0.5rem 0 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-status);
+  }
+
+  .balance-card__delta-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-status);
   }
 
   .balance-card .btn {

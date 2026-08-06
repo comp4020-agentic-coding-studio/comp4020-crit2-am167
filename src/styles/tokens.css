@@ -1,33 +1,44 @@
 /*
- * Design tokens — single dark "fintech app" palette. Purple + white carries
- * the MyWay+ brand; blue/red are reserved for bus/light-rail mode-coding
- * (see TripListItem.astro), kept separate from --color-danger so "this is a
- * tram" never reads as "this is expired".
+ * Design tokens — dark fintech dashboard, no arbitrary brand hue. Colour is
+ * spent on exactly two jobs and never a third: --color-bus/--color-rail are
+ * Transport Canberra's own livery colours and mean ONLY "this is a bus" /
+ * "this is light rail" wherever they appear (route chips, departures, the
+ * line diagram) — never used decoratively. --color-status (+ --color-caution)
+ * is the one accent family reserved for state — on time, live, a balance
+ * change — so it never competes with the mode colours for meaning. Every
+ * other interactive surface (buttons, links, focus, selection) is neutral:
+ * near-white on near-black, no hue at all.
  */
 
 :root {
   color-scheme: dark;
 
-  --color-brand: #8b5cf6;
-  --color-brand-strong: #7c3aed;
-  --color-brand-stronger: #6d28d9;
-  --color-brand-contrast: #fff;
-  --color-bg: #0a0a12;
-  --color-surface: #14141f;
-  --color-surface-raised: #1c1c2b;
-  --color-text: #f5f5fa;
-  --color-text-muted: #9b9bb5;
-  --color-border: #2a2a3d;
-  --color-success: #22c55e;
-  --color-success-bg: #123420;
-  --color-warning: #f59e0b;
-  --color-warning-bg: #3a2a08;
-  --color-danger: #fb7185;
-  --color-danger-bg: #3a1522;
-  --color-mode-bus: #3b82f6;
-  --color-mode-tram: #ef4444;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 12px 32px rgb(139 92 246 / 12%);
+  --color-bg: #0d0f14;
+  --color-surface: #14171d;
+  --color-surface-raised: #1b1f27;
+  --color-border: #262b35;
+  --color-text: #f4f6f8;
+  --color-text-muted: #8e97a8;
+  --color-text-dim: #5f6773;
+
+  /* Neutral UI chrome — buttons, links, focus. Never used for mode/status. */
+  --color-action: #f4f6f8;
+  --color-action-hover: #fff;
+  --color-action-contrast: #0d0f14;
+
+  /* Mode colour-coding — Transport Canberra's real bus (blue) / light rail
+     (red) livery. Reserved exclusively for "which mode is this". */
+  --color-bus: #3e7bfa;
+  --color-rail: #ef4444;
+
+  /* Status accent family — reserved exclusively for state, never mode. */
+  --color-status: #22c55e;
+  --color-status-bg: rgb(34 197 94 / 14%);
+  --color-caution: #f2a93b;
+  --color-caution-bg: rgb(242 169 59 / 14%);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 16px 40px rgb(0 0 0 / 35%);
   --font-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
+  --font-display: "Space Grotesk", var(--font-sans);
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -35,6 +46,7 @@
   --text-xl: 1.375rem;
   --text-2xl: 1.75rem;
   --text-3xl: 2.5rem;
+  --text-4xl: 3rem;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

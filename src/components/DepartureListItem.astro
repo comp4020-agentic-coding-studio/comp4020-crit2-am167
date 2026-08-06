@@ -1,0 +1,111 @@
+---
+import RouteChip from "./RouteChip.astro";
+import type { Departure } from "../lib/fixtures";
+
+interface Props {
+  departure: Departure;
+}
+
+const { departure } = Astro.props;
+const routeLabel = departure.mode === "bus" ? departure.route : "Light rail";
+const statusLabel =
+  departure.status === "on-time"
+    ? "On time"
+    : `Delayed ${departure.delayMinutes} min`;
+const etaLabel = departure.etaMinutes === 0 ? "Now" : `${departure.etaMinutes} min`;
+---
+
+<li class="departure" data-mode={departure.mode}>
+  <div class="departure__route">
+    <RouteChip mode={departure.mode} label={routeLabel} />
+    <span class="departure__headsign">{departure.headsign}</span>
+  </div>
+  <div class="departure__meta">
+    <span class="departure__status" data-status={departure.status}>
+      <span class="departure__status-dot" aria-hidden="true"></span>
+      {statusLabel}
+    </span>
+    <span class="departure__eta tabular-nums">{etaLabel}</span>
+  </div>
+</li>
+
+<style>
+  .departure {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-left: 3px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .departure[data-mode="bus"] {
+    border-left-color: var(--color-bus);
+  }
+
+  .departure[data-mode="light-rail"] {
+    border-left-color: var(--color-rail);
+  }
+
+  .departure__route {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .departure__headsign {
+    font-weight: 600;
+  }
+
+  .departure__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
+  }
+
+  .departure__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .departure__status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-dim);
+  }
+
+  .departure__status[data-status="on-time"] {
+    color: var(--color-status);
+  }
+
+  .departure__status[data-status="on-time"] .departure__status-dot {
+    background: var(--color-status);
+  }
+
+  .departure__status[data-status="delayed"] {
+    color: var(--color-caution);
+  }
+
+  .departure__status[data-status="delayed"] .departure__status-dot {
+    background: var(--color-caution);
+  }
+
+  .departure__eta {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    min-width: 3.5rem;
+    text-align: right;
+  }
+</style>

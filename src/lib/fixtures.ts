@@ -87,7 +87,7 @@ export const SAMPLE_TRIPS: Trip[] = [
     mode: "light-rail",
     route: "Light Rail Stage 1",
     from: "Gungahlin Place",
-    to: "Alinga Street",
+    to: "Alinga Street, City",
     fare: 3.41,
     fareType: "peak",
   },
@@ -119,8 +119,8 @@ export const SAMPLE_TRIPS: Trip[] = [
     time: "17:58",
     mode: "light-rail",
     route: "Light Rail Stage 1",
-    from: "Alinga Street",
-    to: "Dickson",
+    from: "Alinga Street, City",
+    to: "Dickson Interchange",
     fare: 0,
     fareType: "transfer",
   },
@@ -141,7 +141,7 @@ export const SAMPLE_TRIPS: Trip[] = [
     time: "14:05",
     mode: "light-rail",
     route: "Light Rail Stage 1",
-    from: "Alinga Street",
+    from: "Alinga Street, City",
     to: "EPIC and Racecourse",
     fare: 2.7,
     fareType: "off-peak",
@@ -153,7 +153,7 @@ export const SAMPLE_TRIPS: Trip[] = [
     mode: "light-rail",
     route: "Light Rail Stage 1",
     from: "EPIC and Racecourse",
-    to: "Mitchell",
+    to: "Phillip Avenue",
     fare: 0,
     fareType: "capped",
   },
@@ -207,9 +207,100 @@ export const SAMPLE_TRIPS: Trip[] = [
     time: "08:05",
     mode: "light-rail",
     route: "Light Rail Stage 1",
-    from: "Manning Clark",
-    to: "Alinga Street",
+    from: "Manning Clark North",
+    to: "Alinga Street, City",
     fare: 3.41,
     fareType: "peak",
+  },
+];
+
+// Real Light Rail Stage 1 alignment, Gungahlin to the city — Transport
+// Canberra / CMET's own stop list. `nextStopIndex` is a fixed demo position
+// (a real build would read this from CMET's live vehicle feed).
+export const LIGHT_RAIL_LINE = {
+  name: "Light Rail Stage 1",
+  stops: [
+    "Gungahlin Place",
+    "Manning Clark North",
+    "Mapleton Avenue",
+    "Nullarbor Avenue",
+    "Well Station Drive",
+    "Sandford Street",
+    "EPIC and Racecourse",
+    "Phillip Avenue",
+    "Swinden Street",
+    "Dickson Interchange",
+    "Macarthur Avenue",
+    "Ipima Street",
+    "Elouera Street",
+    "Alinga Street, City",
+  ],
+  nextStopIndex: 9,
+} as const;
+
+export interface Departure {
+  id: string;
+  mode: "bus" | "light-rail";
+  route: string;
+  headsign: string;
+  etaMinutes: number;
+  status: "on-time" | "delayed";
+  delayMinutes?: number;
+}
+
+// Demo fixture — invented live departures, not a real feed. Route numbers
+// are the real ones Transport Canberra operates (see SAMPLE_TRIPS above);
+// the ETAs and delay statuses are fabricated to demonstrate the departures
+// board.
+export const DEPARTURES: Departure[] = [
+  {
+    id: "d1",
+    mode: "light-rail",
+    route: "Light Rail",
+    headsign: "Alinga Street, City",
+    etaMinutes: 0,
+    status: "on-time",
+  },
+  {
+    id: "d2",
+    mode: "bus",
+    route: "Rapid 3",
+    headsign: "Woden Interchange",
+    etaMinutes: 3,
+    status: "on-time",
+  },
+  {
+    id: "d3",
+    mode: "bus",
+    route: "Rapid 7",
+    headsign: "Tuggeranong Interchange",
+    etaMinutes: 6,
+    status: "delayed",
+    delayMinutes: 4,
+  },
+  {
+    id: "d4",
+    mode: "light-rail",
+    route: "Light Rail",
+    headsign: "Gungahlin Place",
+    etaMinutes: 9,
+    status: "on-time",
+  },
+  {
+    id: "d5",
+    mode: "bus",
+    route: "Rapid 4",
+    headsign: "Belconnen Interchange",
+    etaMinutes: 12,
+    status: "on-time",
+  },
+  {
+    id: "d6",
+    mode: "bus",
+    route: "Rapid 2",
+    headsign: "Erindale Centre",
+    etaMinutes: 18,
+    status: "delayed",
+    delayMinutes: 2,
   },
 ];
