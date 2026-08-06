@@ -1,30 +1,32 @@
 /*
- * Design tokens. Light values are the defaults on :root; the dark block is
- * duplicated under both the `prefers-color-scheme` media query and the
- * `[data-theme="dark"]` attribute so a manual toggle (see BaseLayout) can
- * override the system default in either direction, and `:not([data-theme="light"])`
- * keeps a manual light choice from being clobbered when the system is dark.
+ * Design tokens — single dark "fintech app" palette. Purple + white carries
+ * the MyWay+ brand; blue/red are reserved for bus/light-rail mode-coding
+ * (see TripListItem.astro), kept separate from --color-danger so "this is a
+ * tram" never reads as "this is expired".
  */
 
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
 
-  --color-brand: #0f766e;
-  --color-brand-strong: #0b5c56;
+  --color-brand: #8b5cf6;
+  --color-brand-strong: #7c3aed;
+  --color-brand-stronger: #6d28d9;
   --color-brand-contrast: #fff;
-  --color-bg: #f5f7f6;
-  --color-surface: #fff;
-  --color-surface-raised: #fff;
-  --color-text: #12191a;
-  --color-text-muted: #5c6b68;
-  --color-border: #dde4e2;
-  --color-success: #157a52;
-  --color-success-bg: #e3f5ec;
-  --color-warning: #8a5a05;
-  --color-warning-bg: #fdf1de;
-  --color-danger: #b3261e;
-  --color-danger-bg: #fbe9e7;
-  --shadow-card: 0 1px 2px rgb(18 26 25 / 5%), 0 10px 30px rgb(18 26 25 / 8%);
+  --color-bg: #0a0a12;
+  --color-surface: #14141f;
+  --color-surface-raised: #1c1c2b;
+  --color-text: #f5f5fa;
+  --color-text-muted: #9b9bb5;
+  --color-border: #2a2a3d;
+  --color-success: #22c55e;
+  --color-success-bg: #123420;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #3a2a08;
+  --color-danger: #fb7185;
+  --color-danger-bg: #3a1522;
+  --color-mode-bus: #3b82f6;
+  --color-mode-tram: #ef4444;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 12px 32px rgb(139 92 246 / 12%);
   --font-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -41,48 +43,8 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4rem;
-  --radius-sm: 0.5rem;
-  --radius-card: 1.25rem;
+  --radius-sm: 0.75rem;
+  --radius-card: 1.5rem;
   --radius-pill: 999px;
   --border-width: 1px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-brand: #2dd4bf;
-    --color-brand-strong: #5eead4;
-    --color-brand-contrast: #062420;
-    --color-bg: #0b1211;
-    --color-surface: #121918;
-    --color-surface-raised: #17201f;
-    --color-text: #eef3f1;
-    --color-text-muted: #9bb0ac;
-    --color-border: #263230;
-    --color-success: #4ade80;
-    --color-success-bg: #123420;
-    --color-warning: #fbbf24;
-    --color-warning-bg: #3a2a08;
-    --color-danger: #f87171;
-    --color-danger-bg: #3a1513;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 30px rgb(0 0 0 / 45%);
-  }
-}
-
-:root[data-theme="dark"] {
-  --color-brand: #2dd4bf;
-  --color-brand-strong: #5eead4;
-  --color-brand-contrast: #062420;
-  --color-bg: #0b1211;
-  --color-surface: #121918;
-  --color-surface-raised: #17201f;
-  --color-text: #eef3f1;
-  --color-text-muted: #9bb0ac;
-  --color-border: #263230;
-  --color-success: #4ade80;
-  --color-success-bg: #123420;
-  --color-warning: #fbbf24;
-  --color-warning-bg: #3a2a08;
-  --color-danger: #f87171;
-  --color-danger-bg: #3a1513;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 10px 30px rgb(0 0 0 / 45%);
 }

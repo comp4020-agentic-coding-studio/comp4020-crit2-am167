@@ -5,7 +5,7 @@
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
 body {
@@ -108,12 +108,12 @@ select {
 }
 
 .btn.primary {
-  background: var(--color-brand);
+  background: var(--color-brand-strong);
   color: var(--color-brand-contrast);
 }
 
 .btn.primary:hover {
-  background: var(--color-brand-strong);
+  background: var(--color-brand-stronger);
   color: var(--color-brand-contrast);
 }
 

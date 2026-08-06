@@ -226,3 +226,59 @@ the auto-top-up form in Chrome rather than walking every page; both correct
 (confirmed via computed-style values, not just eyeballing --- a `#121918`
 card on a `#0b1211` page read as more different than it is in the
 screenshot). `pnpm check`: 87 tests green across all 9 pages.
+
+### Milestone 9: art direction pass (dark fintech, drop dark mode, cut the meta narrative)
+
+After reviewing the v1 build, Advay gave four pieces of direct feedback:
+drop the light/dark toggle, "none of the header buttons work (they go to
+404)", cut the whole "why we redesigned this" narrative from the landing
+page, and do a total visual overhaul --- dark fintech style, purple/white
+for the MyWay+ brand, blue for buses, red for trams.
+
+Investigated the 404 report first rather than assuming a code bug: built,
+ran `pnpm preview`, and clicked every nav link via Chrome DevTools MCP at
+`http://localhost:PORT/comp4020-crit2-am167/...` --- every link resolved
+correctly, on every page, in both `pnpm preview` and `pnpm dev`. The only way
+to reproduce a 404 was hitting the bare URL Astro prints for `pnpm dev`
+(`http://localhost:PORT/`, which omits the configured `base`) or opening
+`dist/index.html` via `file://` --- the exact failure mode `CLAUDE.md`
+already calls out, since directory-style URLs don't auto-resolve
+`index.html` over `file://`. No code fix applied; re-verified the full nav
+end-to-end after the redesign anyway (click-through + resolved `url=` on
+every link at both viewports) rather than taking the earlier investigation
+on faith.
+
+Dropped dark mode entirely: deleted the toggle button, the FOUC-prevention
+script, the toggle JS, `SunIcon`/`MoonIcon`, and the `@media
+(prefers-color-scheme)` / `[data-theme]` blocks in `tokens.css`. The one
+remaining palette is the new dark-fintech look --- since nearly every surface
+already rendered through CSS custom properties (confirmed during v1's polish
+pass), the whole retheme is a `tokens.css` rewrite plus a handful of
+structural touches, not a page-by-page rebuild: a purple+white logomark
+badge replacing the old text-only wordmark, a sticky/blurred header, a
+brand-tinted hero variant on `BentoTile` (dashboard's balance card), and a
+per-`trip.mode` colour cue (blue for bus, red for light rail) on both
+`TripListItem` and the dashboard's recent-trips preview.
+
+Rewrote `index.astro` from a four-section critique essay down to a real
+product landing page --- hero, real mission framing, one real-fare
+highlight (kept the literal `3.41`/`2.70` figures so `redesign.test.ts`'s
+fare-content test still passes), single CTA. The disclosure now lives only
+as one line in the footer, not as page content.
+
+Caught my own regression before it shipped: the first pass of the
+`BentoTile` hero tint used the `hero` size prop as the trigger, but
+`concession.astro` reused `size="hero"` on all three of its cards purely for
+stacking, not emphasis --- so the whole concession page came out washed in
+purple. Fixed by only keeping `hero` on the one card that's meant to lead
+(status), default-sizing the other two.
+
+Also caught a real (if minor) accessibility regression from the new
+palette: white text on the base `--color-brand` fill measured 4.23:1 ---
+under WCAG AA's 4.5:1 for normal text. Added a `--color-brand-stronger`
+token and moved every solid-fill button/pill/chip (not just links/accents,
+which stayed on the lighter `--color-brand`) onto `--color-brand-strong`
+(5.70:1) as the resting state, with `--color-brand-stronger` (7.10:1) for
+hover --- caught by actually computing contrast ratios via
+`evaluate_script`, not by eye. `pnpm check`: 87 tests still green; grepped
+for stray hex codes outside `tokens.css` --- none found.

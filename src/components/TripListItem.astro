@@ -17,7 +17,7 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
 };
 ---
 
-<li class="trip-item">
+<li class="trip-item" data-mode={trip.mode}>
   <div class="trip-item__main">
     <span class="trip-item__mode">{modeLabel}</span>
     <span class="trip-item__route">{trip.route}</span>
@@ -41,7 +41,16 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
     padding: var(--space-3);
     background: var(--color-surface);
     border: var(--border-width) solid var(--color-border);
+    border-left: 3px solid var(--color-border);
     border-radius: var(--radius-sm);
+  }
+
+  .trip-item[data-mode="bus"] {
+    border-left-color: var(--color-mode-bus);
+  }
+
+  .trip-item[data-mode="light-rail"] {
+    border-left-color: var(--color-mode-tram);
   }
 
   .trip-item__main {
@@ -55,7 +64,16 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    font-weight: 700;
     color: var(--color-text-muted);
+  }
+
+  .trip-item[data-mode="bus"] .trip-item__mode {
+    color: var(--color-mode-bus);
+  }
+
+  .trip-item[data-mode="light-rail"] .trip-item__mode {
+    color: var(--color-mode-tram);
   }
 
   .trip-item__route {

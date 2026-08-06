@@ -1,7 +1,5 @@
 ---
 import "../styles/global.css";
-import SunIcon from "../components/icons/SunIcon.astro";
-import MoonIcon from "../components/icons/MoonIcon.astro";
 
 interface Props {
   title: string;
@@ -32,36 +30,16 @@ const navLinks = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} — MyWay+ redesign</title>
-    <script is:inline>
-      (function () {
-        try {
-          var stored = localStorage.getItem("myway-demo:theme");
-          if (stored === "light" || stored === "dark") {
-            document.documentElement.setAttribute("data-theme", stored);
-          }
-        } catch (e) {
-          /* localStorage unavailable — fall back to prefers-color-scheme */
-        }
-      })();
-    </script>
+    <title>{title} — MyWay+</title>
   </head>
   <body>
     <header class="site-header">
       <div class="site-header__bar">
         <a class="wordmark" href={up}>
-          MyWay+ <span class="wordmark__tag">redesign concept</span>
+          <span class="wordmark__mark">M</span>
+          yWay+
         </a>
         <div class="site-header__actions">
-          <button
-            type="button"
-            id="theme-toggle"
-            class="theme-toggle"
-            aria-label="Switch to dark theme"
-          >
-            <SunIcon class="theme-toggle__icon theme-toggle__icon--sun" />
-            <MoonIcon class="theme-toggle__icon theme-toggle__icon--moon" />
-          </button>
           <button
             type="button"
             id="nav-toggle"
@@ -97,13 +75,9 @@ const navLinks = [
     <footer class="site-footer">
       <div class="site-footer__inner">
         <p>
-          A student redesign of Transport Canberra's MyWay+ account portal —
-          a prototype, not an official government service.
-        </p>
-        <p>
-          Need help with the real MyWay+ service? Call Transport Canberra on
-          <strong>13&nbsp;17&nbsp;10</strong>, or send feedback through
-          Access Canberra.
+          A student prototype, not an official Transport Canberra service.
+          For the real thing, call <strong>13&nbsp;17&nbsp;10</strong> or
+          contact Access Canberra.
         </p>
       </div>
     </footer>
@@ -115,41 +89,19 @@ const navLinks = [
         navToggle.setAttribute("aria-expanded", String(isOpen));
         navToggle.textContent = isOpen ? "Close" : "Menu";
       });
-
-      const THEME_KEY = "myway-demo:theme";
-      const themeToggle = document.querySelector<HTMLButtonElement>("#theme-toggle");
-      function currentTheme(): "light" | "dark" {
-        const attr = document.documentElement.getAttribute("data-theme");
-        if (attr === "light" || attr === "dark") return attr;
-        return window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
-      }
-      function setLabel(theme: "light" | "dark") {
-        themeToggle?.setAttribute(
-          "aria-label",
-          theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
-        );
-      }
-      setLabel(currentTheme());
-      themeToggle?.addEventListener("click", () => {
-        const next = currentTheme() === "dark" ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", next);
-        try {
-          localStorage.setItem(THEME_KEY, next);
-        } catch (e) {
-          /* localStorage unavailable — theme choice won't persist */
-        }
-        setLabel(next);
-      });
     </script>
   </body>
 </html>
 
 <style>
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     border-bottom: var(--border-width) solid var(--color-border);
-    background: var(--color-surface);
+    background: rgb(10 10 18 / 72%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
   .site-header__bar {
@@ -168,16 +120,20 @@ const navLinks = [
     color: var(--color-text);
     text-decoration: none;
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--space-2);
   }
 
-  .wordmark__tag {
-    font-weight: 500;
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+  .wordmark__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-brand-strong);
+    color: var(--color-brand-contrast);
+    font-size: var(--text-sm);
   }
 
   .site-header__actions {
@@ -186,52 +142,11 @@ const navLinks = [
     gap: var(--space-3);
   }
 
-  .theme-toggle,
   .nav-toggle {
     border: var(--border-width) solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
     cursor: pointer;
-  }
-
-  .theme-toggle {
-    border-radius: var(--radius-pill);
-    width: 2.25rem;
-    height: 2.25rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-  }
-
-  /*
-   * :global() here because SunIcon/MoonIcon are separate components —
-   * Astro's per-component style scoping would otherwise never match SVGs
-   * rendered by a different component's template.
-   */
-  :global(.theme-toggle__icon--moon) {
-    display: none;
-  }
-
-  :root[data-theme="dark"] :global(.theme-toggle__icon--sun) {
-    display: none;
-  }
-
-  :root[data-theme="dark"] :global(.theme-toggle__icon--moon) {
-    display: inline;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) :global(.theme-toggle__icon--sun) {
-      display: none;
-    }
-
-    :root:not([data-theme="light"]) :global(.theme-toggle__icon--moon) {
-      display: inline;
-    }
-  }
-
-  .nav-toggle {
     border-radius: var(--radius-sm);
     padding: var(--space-2) var(--space-3);
     font-size: var(--text-sm);
@@ -277,12 +192,12 @@ const navLinks = [
   }
 
   .primary-nav__auth a.is-primary {
-    background: var(--color-brand);
+    background: var(--color-brand-strong);
     color: var(--color-brand-contrast);
   }
 
   .primary-nav__auth a.is-primary:hover {
-    background: var(--color-brand-strong);
+    background: var(--color-brand-stronger);
     color: var(--color-brand-contrast);
   }
 
@@ -302,27 +217,14 @@ const navLinks = [
 
   .site-footer {
     border-top: var(--border-width) solid var(--color-border);
-    background: var(--color-surface);
     margin-top: var(--space-8);
   }
 
   .site-footer__inner {
     max-width: 72rem;
     margin: 0 auto;
-    padding: var(--space-6) var(--space-5);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-5);
-    justify-content: space-between;
+    padding: var(--space-5);
     color: var(--color-text-muted);
-    font-size: var(--text-sm);
-  }
-
-  .site-footer a {
-    color: var(--color-text-muted);
-  }
-
-  .site-footer a:hover {
-    color: var(--color-brand);
+    font-size: var(--text-xs);
   }
 </style>

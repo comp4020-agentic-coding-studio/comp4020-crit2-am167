@@ -18,4 +18,13 @@ const { size = "medium" } = Astro.props;
     box-shadow: var(--shadow-card);
     padding: var(--space-5);
   }
+
+  .bento-tile--hero {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-brand) 18%, var(--color-surface)),
+      var(--color-surface)
+    );
+    border-color: color-mix(in srgb, var(--color-brand) 35%, var(--color-border));
+  }
 </style>

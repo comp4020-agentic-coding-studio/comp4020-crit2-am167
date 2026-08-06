@@ -55,7 +55,7 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
       <ul class="trip-preview">
         {
           recentTrips.map((trip) => (
-            <li>
+            <li data-mode={trip.mode}>
               <span>{trip.route}</span>
               <span>
                 {trip.from} → {trip.to}
@@ -137,6 +137,16 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     gap: var(--space-3);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-2);
+  }
+
+  .trip-preview li[data-mode="bus"] {
+    border-left-color: var(--color-mode-bus);
+  }
+
+  .trip-preview li[data-mode="light-rail"] {
+    border-left-color: var(--color-mode-tram);
   }
 
   .trip-preview li span:first-child {
