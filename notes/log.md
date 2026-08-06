@@ -282,3 +282,39 @@ which stayed on the lighter `--color-brand`) onto `--color-brand-strong`
 hover --- caught by actually computing contrast ratios via
 `evaluate_script`, not by eye. `pnpm check`: 87 tests still green; grepped
 for stray hex codes outside `tokens.css` --- none found.
+
+### Milestone 10: fix the actual dev-server 404 (astro.config.mjs)
+
+Advay came back with a screenshot: clicking "Trip history" landed on
+`http://localhost:4324/trips/` and hit Astro's own 404 page. My earlier
+investigation (milestone 9) had wrongly concluded this was a `file://` or
+wrong-URL issue on the user's end --- it wasn't. Reproduced directly:
+`astro dev`'s own printed URL (`http://localhost:PORT/`, no `base` suffix)
+404s, because Astro's dev server rejects any request outside `base` *before*
+it reaches user code (confirmed by adding a debug `console.log` to a Vite
+`configureServer` middleware --- it never fired, even with `enforce: "pre"`,
+so this is enforced above the user middleware layer, not something a
+redirect plugin can intercept). Anyone who clicks the literal URL the tool
+prints, including a stale tab that's been open a while, lands off the base
+path and every relative nav link from there stays off it too.
+
+Real fix, once the mechanism was clear: `base` only needs to hold for the
+*build* output and for `preview` (which deliberately mirrors the deployed
+base path — correct, since that's the point of previewing). `dev` is local
+iteration and has no reason to require an extra path segment. Made `base`
+conditional on `process.argv.includes("dev")` in `astro.config.mjs`, so
+`astro dev` now serves at plain `/` (matching its own printed URL exactly)
+while `build`/`preview` are untouched. Verified: fresh `pnpm dev` renders the
+home page at its own printed root and "Trip history" now correctly lands on
+`/trips/`; `pnpm build` still emits `/comp4020-crit2-am167/...`-prefixed
+asset URLs; `pnpm preview` still serves under the full base path exactly as
+before. `pnpm check`: 87 tests green.
+
+Also found and cleared four zombie `astro dev`/`astro preview` processes
+left over from this whole session — my repeated `pkill -f "astro dev"`/`"astro
+preview"` had silently failed every time, since the real command line is
+`astro.mjs dev`/`astro.mjs preview` (no contiguous "astro dev" substring), so
+the pattern never matched. One of those zombies (the very first `pnpm dev`
+from hours earlier) is almost certainly the exact server the 404 screenshot
+was taken against. Used `astro dev stop` for the persistent dev daemon and
+killed the rest by PID.
