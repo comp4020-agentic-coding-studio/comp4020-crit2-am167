@@ -133,3 +133,24 @@ would have missed that second one, since it's set by a script, not markup.
 Grepped the whole `src/pages/` tree afterwards to confirm no other instance
 was hiding. Every page from here on that links to a sibling needs `../`, not
 `./` --- only `index.astro` and `404.astro` get `./`.
+
+### Milestone 4: dashboard
+
+Added `BentoTile`, `BalanceCard` and `StatusCard` components and composed
+them into `dashboard.astro`: a hero balance tile with a tabular-nums figure
+and an attached top-up CTA, two status tiles (auto top-up, concession) with
+a colour-coded left border, and a recent-trips preview. This is the direct
+answer to the most-cited real complaint (the ~85% 1-star reviews about
+account management being a webview, not a native screen) --- everything here
+is real markup, not an iframe.
+
+Balance/auto-top-up/concession all need a value at build time, when there's
+no `localStorage` to read from, so each renders `demo-state.ts`'s exported
+default constants as a static fallback, then a client script overwrites the
+same DOM nodes once it can read the real value --- the same shape as the
+`spec/redesign.test.ts` balance check already assumes (it only ever sees the
+static fallback, which is why that value has to be real markup and not
+purely JS-injected). `StatusCard` stays a dumb presentational component and
+doesn't know about `demoState` itself; the page passes it a `dataRole` and
+does the live update itself, since the two dashboard instances (auto top-up,
+concession) need different update logic.

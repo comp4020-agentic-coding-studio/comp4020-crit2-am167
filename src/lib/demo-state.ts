@@ -15,14 +15,17 @@ export interface ConcessionState {
   expiry: string;
 }
 
-const DEFAULT_BALANCE_CENTS = 4230;
-const DEFAULT_AUTO_TOP_UP: AutoTopUpState = {
+// Exported so build-time components (BalanceCard, StatusCard) can render a
+// static fallback that matches what the client script seeds on first load —
+// there's no localStorage during static build to read the real value from.
+export const DEFAULT_BALANCE_CENTS = 4230;
+export const DEFAULT_AUTO_TOP_UP: AutoTopUpState = {
   enabled: false,
   thresholdCents: 1000,
   targetCents: 2500,
   method: "visa",
 };
-const DEFAULT_CONCESSION: ConcessionState = {
+export const DEFAULT_CONCESSION: ConcessionState = {
   typeId: "student",
   expiry: "2027-02-28",
 };

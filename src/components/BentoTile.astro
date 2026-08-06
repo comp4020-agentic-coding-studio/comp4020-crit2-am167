@@ -1,0 +1,21 @@
+---
+interface Props {
+  size?: "hero" | "medium" | "small";
+}
+
+const { size = "medium" } = Astro.props;
+---
+
+<div class:list={["bento-tile", `bento-tile--${size}`]}>
+  <slot />
+</div>
+
+<style>
+  .bento-tile {
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-5);
+  }
+</style>

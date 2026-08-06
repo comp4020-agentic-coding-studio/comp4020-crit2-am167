@@ -76,3 +76,17 @@ describe("redesign: login groups its primary actions", () => {
     ).toBe(true);
   });
 });
+
+describe("redesign: dashboard shows a balance", () => {
+  it("dashboard/index.html renders a dollar-figure balance in its static fallback", () => {
+    const dashboard = pages.find(({ name }) => name === "dashboard/index.html");
+    expect(dashboard, "expected a built dashboard page at dashboard/index.html").toBeTruthy();
+    if (!dashboard) return;
+
+    const text = dashboard.doc.body.textContent ?? "";
+    expect(
+      /\$\d+\.\d{2}/.test(text),
+      "expected the dashboard's static (no-JS) render to include a dollar-figure balance",
+    ).toBe(true);
+  });
+});

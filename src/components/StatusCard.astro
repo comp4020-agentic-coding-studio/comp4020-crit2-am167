@@ -1,0 +1,67 @@
+---
+interface Props {
+  status: "active" | "expiring" | "expired" | "off";
+  label: string;
+  detail: string;
+  href?: string;
+  linkText?: string;
+  /** Lets a page-level script find and update this card's detail text once
+   * it reads the real client-side state. */
+  dataRole?: string;
+}
+
+const { status, label, detail, href, linkText, dataRole } = Astro.props;
+---
+
+<div class="status-card" data-status={status} data-role={dataRole}>
+  <p class="status-card__label">{label}</p>
+  <p class="status-card__detail" data-role={dataRole && `${dataRole}-detail`}>
+    {detail}
+  </p>
+  {
+    href && linkText && (
+      <a class="status-card__link" href={href}>
+        {linkText}
+      </a>
+    )
+  }
+</div>
+
+<style>
+  .status-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    height: 100%;
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-3);
+  }
+
+  .status-card[data-status="active"] {
+    border-left-color: var(--color-success);
+  }
+
+  .status-card[data-status="expiring"] {
+    border-left-color: var(--color-warning);
+  }
+
+  .status-card[data-status="expired"] {
+    border-left-color: var(--color-danger);
+  }
+
+  .status-card__label {
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .status-card__detail {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin: 0;
+  }
+
+  .status-card__link {
+    font-size: var(--text-sm);
+    margin-top: auto;
+  }
+</style>
