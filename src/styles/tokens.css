@@ -1,42 +1,41 @@
 /*
- * Design tokens — dark fintech dashboard, no arbitrary brand hue. Colour is
- * spent on exactly two jobs and never a third: --color-bus/--color-rail are
- * Transport Canberra's own livery colours and mean ONLY "this is a bus" /
- * "this is light rail" wherever they appear (route chips, departures, the
- * line diagram) — never used decoratively. --color-status (+ --color-caution)
- * is the one accent family reserved for state — on time, live, a balance
- * change — so it never competes with the mode colours for meaning. Every
- * other interactive surface (buttons, links, focus, selection) is neutral:
- * near-white on near-black, no hue at all.
+ * Design tokens — calm, wayfinding-first MyWay+ utility. Colour is spent on
+ * two jobs and never a third: --color-bus/--color-rail are Transport
+ * Canberra's livery colours and mean ONLY "this is a bus" / "this is light
+ * rail"; --color-status/--color-caution communicate service and account
+ * state. Everything else stays quiet so a departing vehicle remains the
+ * strongest visual signal on the page.
  */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --color-bg: #0d0f14;
-  --color-surface: #14171d;
-  --color-surface-raised: #1b1f27;
-  --color-border: #262b35;
-  --color-text: #f4f6f8;
-  --color-text-muted: #8e97a8;
-  --color-text-dim: #5f6773;
+  --color-bg: #f1f4f6;
+  --color-surface: #fff;
+  --color-surface-raised: #e8eef2;
+  --color-surface-hero: #f2f7fb;
+  --color-border: #d3dde4;
+  --color-border-hero: #b9cfe0;
+  --color-text: #172630;
+  --color-text-muted: #536773;
+  --color-text-dim: #6f828d;
 
-  /* Neutral UI chrome — buttons, links, focus. Never used for mode/status. */
-  --color-action: #f4f6f8;
-  --color-action-hover: #fff;
-  --color-action-contrast: #0d0f14;
+  /* Neutral UI chrome — buttons, links and focus. Never used for mode/state. */
+  --color-action: #17303f;
+  --color-action-hover: #254b60;
+  --color-action-contrast: #fff;
 
   /* Mode colour-coding — Transport Canberra's real bus (blue) / light rail
      (red) livery. Reserved exclusively for "which mode is this". */
-  --color-bus: #3e7bfa;
-  --color-rail: #ef4444;
+  --color-bus: #1f5fc4;
+  --color-rail: #c9444f;
 
   /* Status accent family — reserved exclusively for state, never mode. */
-  --color-status: #22c55e;
-  --color-status-bg: rgb(34 197 94 / 14%);
-  --color-caution: #f2a93b;
-  --color-caution-bg: rgb(242 169 59 / 14%);
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 40%), 0 16px 40px rgb(0 0 0 / 35%);
+  --color-status: #17784f;
+  --color-status-bg: rgb(23 120 79 / 12%);
+  --color-caution: #9b5c08;
+  --color-caution-bg: rgb(155 92 8 / 12%);
+  --shadow-card: 0 1px 2px rgb(23 38 48 / 7%), 0 12px 28px rgb(23 38 48 / 8%);
   --font-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
   --font-display: "Space Grotesk", var(--font-sans);
   --text-xs: 0.75rem;
@@ -55,8 +54,8 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4rem;
-  --radius-sm: 0.75rem;
-  --radius-card: 1.5rem;
+  --radius-sm: 0.625rem;
+  --radius-card: 1rem;
   --radius-pill: 999px;
   --border-width: 1px;
 }
