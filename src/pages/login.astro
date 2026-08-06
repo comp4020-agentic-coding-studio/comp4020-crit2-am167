@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Log in">
+  <section class="auth-card">
+    <h1>Log in</h1>
+    <p class="auth-card-lede">
+      Use a passkey for one-tap sign-in, or your email and password.
+    </p>
+    <button type="button" id="passkey-login" class="btn primary full-width">
+      Continue with a passkey
+    </button>
+    <div class="divider"><span>or</span></div>
+    <form id="login-form">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          required
+          autocomplete="current-password"
+        />
+      </div>
+      <button type="submit" class="btn secondary full-width">Log in</button>
+    </form>
+    <p class="auth-card-alt">
+      New to MyWay+? <a href="../signup/">Create an account</a>
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+
+  function completeLogin() {
+    demoState.login();
+    window.location.href = "../dashboard/";
+  }
+
+  document
+    .querySelector<HTMLButtonElement>("#passkey-login")
+    ?.addEventListener("click", completeLogin);
+
+  document
+    .querySelector<HTMLFormElement>("#login-form")
+    ?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      completeLogin();
+    });
+</script>

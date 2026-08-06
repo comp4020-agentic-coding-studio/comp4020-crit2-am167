@@ -46,3 +46,33 @@ describe("redesign: real fare content", () => {
     expect(hasFares).toBe(true);
   });
 });
+
+describe("redesign: login groups its primary actions", () => {
+  it("login's primary actions are grouped in a labelled container, not bare in <main>", () => {
+    const login = pages.find(({ name }) => name === "login/index.html");
+    expect(login, "expected a built login page at login/index.html").toBeTruthy();
+    if (!login) return;
+
+    const main = login.doc.querySelector("main");
+    expect(main).toBeTruthy();
+    if (!main) return;
+
+    const bareButtons = Array.from(main.children).filter(
+      (child) =>
+        child.tagName === "BUTTON" ||
+        (child.tagName === "A" && child.classList.contains("btn")),
+    );
+    expect(
+      bareButtons.length,
+      "primary actions should be grouped inside a card/section, not bare children of <main> — the real system's login screen has orphaned floating CTAs with no grouping",
+    ).toBe(0);
+
+    const hasGroupedCard = Array.from(main.querySelectorAll("section, form, div")).some(
+      (el) => el.querySelector("h1, h2, h3") && el.querySelector("button"),
+    );
+    expect(
+      hasGroupedCard,
+      "expected a labelled container (a heading plus a button) wrapping login's primary actions",
+    ).toBe(true);
+  });
+});

@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Sign up">
+  <section class="auth-card">
+    <h1>Create your account</h1>
+    <p class="auth-card-lede">
+      One form, one path — no account-type picker to work through first.
+    </p>
+    <form id="signup-form">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input id="name" type="text" required autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="signup-email">Email</label>
+        <input
+          id="signup-email"
+          type="email"
+          required
+          autocomplete="email"
+        />
+      </div>
+      <div class="field">
+        <label for="signup-password">Password</label>
+        <input
+          id="signup-password"
+          type="password"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        />
+      </div>
+      <div class="field">
+        <label for="confirm-password">Confirm password</label>
+        <input
+          id="confirm-password"
+          type="password"
+          required
+          minlength="8"
+          autocomplete="new-password"
+        />
+        <p class="field-hint" id="password-mismatch" hidden>
+          Passwords don't match.
+        </p>
+      </div>
+      <button type="submit" class="btn primary full-width"
+        >Create account</button
+      >
+    </form>
+    <p class="auth-card-alt">
+      Already have an account? <a href="../login/">Log in</a>
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+
+  const form = document.querySelector<HTMLFormElement>("#signup-form");
+  const password = document.querySelector<HTMLInputElement>(
+    "#signup-password",
+  );
+  const confirm = document.querySelector<HTMLInputElement>(
+    "#confirm-password",
+  );
+  const mismatchHint = document.querySelector<HTMLElement>(
+    "#password-mismatch",
+  );
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (password?.value !== confirm?.value) {
+      mismatchHint?.removeAttribute("hidden");
+      confirm?.focus();
+      return;
+    }
+    mismatchHint?.setAttribute("hidden", "");
+    demoState.login();
+    window.location.href = "../dashboard/";
+  });
+</script>

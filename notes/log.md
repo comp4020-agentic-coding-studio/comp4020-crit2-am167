@@ -106,3 +106,30 @@ states the real fares. Held off adding the concession-catalogue test from
 the plan's milestone-2 list since `concession.astro` doesn't exist until
 milestone 7 --- a test that can't be satisfied by any current content would
 just be a red `pnpm check` for no reason; tests track features as they land.
+
+### Milestone 3: auth pages
+
+Added `src/lib/demo-state.ts` (typed `localStorage` wrapper for the fake
+balance/auto-top-up/concession state), `login.astro` (passkey-first primary
+action, password fallback, grouped into one labelled card) and `signup.astro`
+(single linear form, email before password, no account-type modal). Added a
+structural spec test asserting login's primary actions live inside a
+labelled container rather than bare in `<main>`.
+
+Found the same real bug twice while verifying the click-through in Chrome,
+not just eyeballing screenshots. First: `BaseLayout`'s nav used `./dashboard/`
+etc. everywhere, which is only correct from the site root --- every other
+page (login, signup, and everything still to come) builds to
+`pagename/index.html`, one directory deeper, so from there `./dashboard/`
+resolves to `/login/dashboard/` instead of `/dashboard/`. Fixed by giving
+`BaseLayout` an explicit `depth` prop (0 for `index`/`404`, which Astro
+special-cases to the site root; 1, the default, for everything else) and
+building nav hrefs from `../` at depth 1. Second: the exact same mistake was
+sitting in login/signup's own inline cross-links *and* in their post-submit
+`window.location.href` redirects --- caught the redirect instance only by
+actually clicking "Create account" and watching it land on
+`/signup/dashboard/` instead of `/dashboard/`. A static href check alone
+would have missed that second one, since it's set by a script, not markup.
+Grepped the whole `src/pages/` tree afterwards to confirm no other instance
+was hiding. Every page from here on that links to a sibling needs `../`, not
+`./` --- only `index.astro` and `404.astro` get `./`.

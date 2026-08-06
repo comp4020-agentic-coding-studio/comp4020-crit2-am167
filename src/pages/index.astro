@@ -5,7 +5,7 @@ import { FARE_TABLE } from "../lib/fixtures";
 const fareSummary = `$${FARE_TABLE.adult.offPeak.toFixed(2)} off-peak to $${FARE_TABLE.adult.peak.toFixed(2)} at peak (concession from $${FARE_TABLE.concession.offPeak.toFixed(2)} to $${FARE_TABLE.concession.peak.toFixed(2)})`;
 ---
 
-<BaseLayout title="Home">
+<BaseLayout title="Home" depth={0}>
   <section class="hero">
     <h1>The MyWay+ account, redesigned</h1>
     <p class="lede">

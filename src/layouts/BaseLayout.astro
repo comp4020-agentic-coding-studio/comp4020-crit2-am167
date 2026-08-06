@@ -5,16 +5,25 @@ import MoonIcon from "../components/icons/MoonIcon.astro";
 
 interface Props {
   title: string;
+  /**
+   * How many directory levels below the site root this page's *output
+   * file* sits — not its URL. Every page except index.astro and
+   * 404.astro (both of which Astro emits at the root, alongside each
+   * other) builds to `pagename/index.html`, one level deeper. Nav links
+   * need "../" from those, "./" from the two root-level pages.
+   */
+  depth?: 0 | 1;
 }
 
-const { title } = Astro.props;
+const { title, depth = 1 } = Astro.props;
+const up = depth === 0 ? "./" : "../";
 
 const navLinks = [
-  { href: "./dashboard/", label: "Dashboard" },
-  { href: "./trips/", label: "Trip history" },
-  { href: "./top-up/", label: "Top up" },
-  { href: "./auto-top-up/", label: "Auto top-up" },
-  { href: "./concession/", label: "Concession" },
+  { href: `${up}dashboard/`, label: "Dashboard" },
+  { href: `${up}trips/`, label: "Trip history" },
+  { href: `${up}top-up/`, label: "Top up" },
+  { href: `${up}auto-top-up/`, label: "Auto top-up" },
+  { href: `${up}concession/`, label: "Concession" },
 ];
 ---
 
@@ -40,7 +49,7 @@ const navLinks = [
   <body>
     <header class="site-header">
       <div class="site-header__bar">
-        <a class="wordmark" href="./">
+        <a class="wordmark" href={up}>
           MyWay+ <span class="wordmark__tag">redesign concept</span>
         </a>
         <div class="site-header__actions">
@@ -76,8 +85,8 @@ const navLinks = [
             }
           </ul>
           <ul class="primary-nav__auth">
-            <li><a href="./login/">Log in</a></li>
-            <li><a class="is-primary" href="./signup/">Sign up</a></li>
+            <li><a href={`${up}login/`}>Log in</a></li>
+            <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
           </ul>
         </div>
       </nav>
