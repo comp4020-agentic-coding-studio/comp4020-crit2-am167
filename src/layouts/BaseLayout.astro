@@ -1,11 +1,21 @@
 ---
 import "../styles/global.css";
+import SunIcon from "../components/icons/SunIcon.astro";
+import MoonIcon from "../components/icons/MoonIcon.astro";
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
+
+const navLinks = [
+  { href: "./dashboard/", label: "Dashboard" },
+  { href: "./trips/", label: "Trip history" },
+  { href: "./top-up/", label: "Top up" },
+  { href: "./auto-top-up/", label: "Auto top-up" },
+  { href: "./concession/", label: "Concession" },
+];
 ---
 
 <!doctype html>
@@ -13,16 +23,297 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <title>{title} — MyWay+ redesign</title>
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("myway-demo:theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.setAttribute("data-theme", stored);
+          }
+        } catch (e) {
+          /* localStorage unavailable — fall back to prefers-color-scheme */
+        }
+      })();
+    </script>
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
+    <header class="site-header">
+      <div class="site-header__bar">
+        <a class="wordmark" href="./">
+          MyWay+ <span class="wordmark__tag">redesign concept</span>
+        </a>
+        <div class="site-header__actions">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Switch to dark theme"
+          >
+            <SunIcon class="theme-toggle__icon theme-toggle__icon--sun" />
+            <MoonIcon class="theme-toggle__icon theme-toggle__icon--moon" />
+          </button>
+          <button
+            type="button"
+            id="nav-toggle"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="primary-nav-panel"
+          >
+            Menu
+          </button>
+        </div>
+      </div>
+      <nav aria-label="Primary" class="primary-nav">
+        <div id="primary-nav-panel" class="primary-nav__panel">
+          <ul class="primary-nav__links">
+            {
+              navLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+          <ul class="primary-nav__auth">
+            <li><a href="./login/">Log in</a></li>
+            <li><a class="is-primary" href="./signup/">Sign up</a></li>
+          </ul>
+        </div>
       </nav>
     </header>
     <main>
       <slot />
     </main>
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p>
+          A student redesign of Transport Canberra's MyWay+ account portal —
+          a prototype, not an official government service.
+        </p>
+        <p>
+          Need help with the real MyWay+ service? Call Transport Canberra on
+          <strong>13&nbsp;17&nbsp;10</strong>, or send feedback through
+          Access Canberra.
+        </p>
+      </div>
+    </footer>
+    <script>
+      const navToggle = document.querySelector<HTMLButtonElement>("#nav-toggle");
+      const navPanel = document.querySelector<HTMLElement>("#primary-nav-panel");
+      navToggle?.addEventListener("click", () => {
+        const isOpen = navPanel?.classList.toggle("is-open") ?? false;
+        navToggle.setAttribute("aria-expanded", String(isOpen));
+        navToggle.textContent = isOpen ? "Close" : "Menu";
+      });
+
+      const THEME_KEY = "myway-demo:theme";
+      const themeToggle = document.querySelector<HTMLButtonElement>("#theme-toggle");
+      function currentTheme(): "light" | "dark" {
+        const attr = document.documentElement.getAttribute("data-theme");
+        if (attr === "light" || attr === "dark") return attr;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+      function setLabel(theme: "light" | "dark") {
+        themeToggle?.setAttribute(
+          "aria-label",
+          theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
+        );
+      }
+      setLabel(currentTheme());
+      themeToggle?.addEventListener("click", () => {
+        const next = currentTheme() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try {
+          localStorage.setItem(THEME_KEY, next);
+        } catch (e) {
+          /* localStorage unavailable — theme choice won't persist */
+        }
+        setLabel(next);
+      });
+    </script>
   </body>
 </html>
+
+<style>
+  .site-header {
+    border-bottom: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .site-header__bar {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .wordmark__tag {
+    font-weight: 500;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .theme-toggle,
+  .nav-toggle {
+    border: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .theme-toggle {
+    border-radius: var(--radius-pill);
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /*
+   * :global() here because SunIcon/MoonIcon are separate components —
+   * Astro's per-component style scoping would otherwise never match SVGs
+   * rendered by a different component's template.
+   */
+  :global(.theme-toggle__icon--moon) {
+    display: none;
+  }
+
+  :root[data-theme="dark"] :global(.theme-toggle__icon--sun) {
+    display: none;
+  }
+
+  :root[data-theme="dark"] :global(.theme-toggle__icon--moon) {
+    display: inline;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) :global(.theme-toggle__icon--sun) {
+      display: none;
+    }
+
+    :root:not([data-theme="light"]) :global(.theme-toggle__icon--moon) {
+      display: inline;
+    }
+  }
+
+  .nav-toggle {
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .primary-nav__panel {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 var(--space-5) var(--space-4);
+  }
+
+  .primary-nav__panel.is-open {
+    display: flex;
+  }
+
+  .primary-nav__links,
+  .primary-nav__auth {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .primary-nav__links a,
+  .primary-nav__auth a {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+
+  .primary-nav__links a:hover,
+  .primary-nav__auth a:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-brand);
+  }
+
+  .primary-nav__auth a.is-primary {
+    background: var(--color-brand);
+    color: var(--color-brand-contrast);
+  }
+
+  .primary-nav__auth a.is-primary:hover {
+    background: var(--color-brand-strong);
+    color: var(--color-brand-contrast);
+  }
+
+  @media (min-width: 720px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    .primary-nav__panel {
+      display: flex !important;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-5) var(--space-4);
+    }
+  }
+
+  .site-footer {
+    border-top: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+    margin-top: var(--space-8);
+  }
+
+  .site-footer__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    justify-content: space-between;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .site-footer a {
+    color: var(--color-text-muted);
+  }
+
+  .site-footer a:hover {
+    color: var(--color-brand);
+  }
+</style>
