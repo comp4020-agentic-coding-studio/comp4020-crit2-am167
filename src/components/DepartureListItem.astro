@@ -45,10 +45,12 @@ const etaLabel = departure.etaMinutes === 0 ? "Now" : `${departure.etaMinutes} m
 
   .departure[data-mode="bus"] {
     border-left-color: var(--color-bus);
+    background: color-mix(in srgb, var(--color-bus) 5%, var(--color-surface));
   }
 
   .departure[data-mode="light-rail"] {
     border-left-color: var(--color-rail);
+    background: color-mix(in srgb, var(--color-rail) 5%, var(--color-surface));
   }
 
   .departure__route {

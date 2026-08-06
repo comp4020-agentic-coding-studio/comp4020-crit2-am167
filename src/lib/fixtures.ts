@@ -14,6 +14,9 @@ export const FARE_TABLE = {
   newCard: { adult: 5, concession: 2.5, seniorFree: true },
 } as const;
 
+// Demo fixture — the logged-in nav chip's account name.
+export const ACCOUNT_NAME = "Advay";
+
 export interface ConcessionType {
   id: string;
   name: string;
