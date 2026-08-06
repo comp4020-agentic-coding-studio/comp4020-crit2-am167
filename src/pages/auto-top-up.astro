@@ -1,61 +1,75 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BentoTile from "../components/BentoTile.astro";
 import { DEFAULT_AUTO_TOP_UP } from "../lib/demo-state";
+import { FARE_TABLE } from "../lib/fixtures";
 ---
 
 <BaseLayout title="Auto top-up">
-  <section class="settings-card">
-    <h1>Auto top-up</h1>
-    <p class="settings-card-lede">
-      Never think about your balance again — top up automatically when it
-      runs low.
-    </p>
-    <form id="auto-top-up-form">
-      <div class="field field-toggle">
-        <label for="auto-top-up-enabled">
+  <h1>Auto top-up</h1>
+  <div class="page-stack">
+    <BentoTile size="hero">
+      <p class="settings-card-lede">
+        Never think about your balance again — top up automatically when it
+        runs low.
+      </p>
+      <form id="auto-top-up-form">
+        <div class="field field-toggle">
+          <label for="auto-top-up-enabled">
+            <input
+              type="checkbox"
+              id="auto-top-up-enabled"
+              role="switch"
+              checked={DEFAULT_AUTO_TOP_UP.enabled}
+            />
+            Turn on auto top-up
+          </label>
+        </div>
+        <div class="field">
+          <label for="threshold">When my balance drops below ($)</label>
           <input
-            type="checkbox"
-            id="auto-top-up-enabled"
-            role="switch"
-            checked={DEFAULT_AUTO_TOP_UP.enabled}
+            type="number"
+            id="threshold"
+            min="1"
+            step="1"
+            value={DEFAULT_AUTO_TOP_UP.thresholdCents / 100}
           />
-          Turn on auto top-up
-        </label>
-      </div>
-      <div class="field">
-        <label for="threshold">When my balance drops below ($)</label>
-        <input
-          type="number"
-          id="threshold"
-          min="1"
-          step="1"
-          value={DEFAULT_AUTO_TOP_UP.thresholdCents / 100}
-        />
-      </div>
-      <div class="field">
-        <label for="target">Top up to ($)</label>
-        <input
-          type="number"
-          id="target"
-          min="5"
-          step="1"
-          value={DEFAULT_AUTO_TOP_UP.targetCents / 100}
-        />
-      </div>
-      <div class="field">
-        <label for="method">Payment method</label>
-        <select id="method">
-          <option value="visa">Visa ····1234</option>
-          <option value="mastercard">Mastercard ····5678</option>
-        </select>
-      </div>
-      <p class="field-hint" id="preview-sentence"></p>
-      <button type="submit" class="btn primary full-width">
-        Save settings
-      </button>
-      <p class="field-hint" id="save-confirmation" hidden>Saved.</p>
-    </form>
-  </section>
+        </div>
+        <div class="field">
+          <label for="target">Top up to ($)</label>
+          <input
+            type="number"
+            id="target"
+            min="5"
+            step="1"
+            value={DEFAULT_AUTO_TOP_UP.targetCents / 100}
+          />
+        </div>
+        <div class="field">
+          <label for="method">Payment method</label>
+          <select id="method">
+            <option value="visa">Visa ····1234</option>
+            <option value="mastercard">Mastercard ····5678</option>
+          </select>
+        </div>
+        <p class="field-hint" id="preview-sentence"></p>
+        <button type="submit" class="btn primary full-width">
+          Save settings
+        </button>
+        <p class="field-hint" id="save-confirmation" hidden>Saved.</p>
+      </form>
+    </BentoTile>
+
+    <BentoTile>
+      <h2>Why auto top-up</h2>
+      <p class="why-auto-top-up">
+        Auto top-up gets you {FARE_TABLE.autoTopUpDiscountPercent}% off every
+        top-up amount, and means you're never stuck with an insufficient
+        balance at the validator — the two documented pain points of topping
+        up manually.
+      </p>
+    </BentoTile>
+  </div>
 </BaseLayout>
 
 <script>
@@ -116,16 +130,6 @@ import { DEFAULT_AUTO_TOP_UP } from "../lib/demo-state";
 </script>
 
 <style>
-  .settings-card {
-    max-width: 30rem;
-    margin: var(--space-6) auto;
-    padding: var(--space-6);
-    background: var(--color-surface);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
-  }
-
   .settings-card-lede {
     color: var(--color-text-muted);
     margin-bottom: var(--space-5);
@@ -151,5 +155,10 @@ import { DEFAULT_AUTO_TOP_UP } from "../lib/demo-state";
     text-align: center;
     color: var(--color-status);
     margin-top: var(--space-3);
+  }
+
+  .why-auto-top-up {
+    color: var(--color-text-muted);
+    margin: 0;
   }
 </style>

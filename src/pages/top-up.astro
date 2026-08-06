@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BentoTile from "../components/BentoTile.astro";
 import AmountChip from "../components/AmountChip.astro";
 import { FARE_TABLE } from "../lib/fixtures";
 
@@ -7,48 +8,81 @@ const presetAmounts = [10, 20, 50, 100];
 ---
 
 <BaseLayout title="Top up">
-  <section class="top-up-card">
-    <h1>Top up your balance</h1>
-    <p class="top-up-card-lede">Choose an amount, or enter your own.</p>
+  <h1>Top up your balance</h1>
+  <div class="page-stack">
+    <BentoTile size="hero">
+      <p class="top-up-card-lede">Choose an amount, or enter your own.</p>
 
-    <div id="top-up-form-view">
-      <div class="amount-chips" role="group" aria-label="Preset amounts">
-        {presetAmounts.map((amount) => <AmountChip value={amount} />)}
+      <div id="top-up-form-view">
+        <div class="amount-chips" role="group" aria-label="Preset amounts">
+          {presetAmounts.map((amount) => <AmountChip value={amount} />)}
+        </div>
+        <div class="field">
+          <label for="custom-amount">Custom amount ($)</label>
+          <input id="custom-amount" type="number" min="5" max="500" step="0.05" />
+        </div>
+        <button
+          type="button"
+          id="top-up-submit"
+          class="btn positive full-width"
+          disabled
+        >
+          Top up
+        </button>
       </div>
-      <div class="field">
-        <label for="custom-amount">Custom amount ($)</label>
-        <input id="custom-amount" type="number" min="5" max="500" step="0.05" />
+
+      <div id="top-up-processing-view" class="top-up-status" hidden>
+        <p>Processing your top-up…</p>
       </div>
-      <button
-        type="button"
-        id="top-up-submit"
-        class="btn positive full-width"
-        disabled
-      >
-        Top up
-      </button>
-    </div>
 
-    <div id="top-up-processing-view" class="top-up-status" hidden>
-      <p>Processing your top-up…</p>
-    </div>
+      <div id="top-up-success-view" class="top-up-status" hidden>
+        <p>
+          Top-up complete. Your new balance is{" "}
+          <strong id="new-balance" class="tabular-nums"></strong>.
+        </p>
+        <a href="../dashboard/" class="btn secondary full-width"
+          >Back to dashboard</a
+        >
+      </div>
+    </BentoTile>
 
-    <div id="top-up-success-view" class="top-up-status" hidden>
-      <p>
-        Top-up complete. Your new balance is{" "}
-        <strong id="new-balance" class="tabular-nums"></strong>.
-      </p>
-      <a href="../dashboard/" class="btn secondary full-width"
-        >Back to dashboard</a
-      >
-    </div>
-
-    <p class="top-up-fares-note">
-      Adult fares run ${FARE_TABLE.adult.offPeak.toFixed(2)} off-peak to $
-      {FARE_TABLE.adult.peak.toFixed(2)} at peak, current as of{" "}
-      {FARE_TABLE.effectiveFrom}.
-    </p>
-  </section>
+    <BentoTile>
+      <h2>Fares & caps</h2>
+      <ul class="fare-facts">
+        <li>
+          <p class="fare-facts__label">Adult fares</p>
+          <p class="fare-facts__detail">
+            ${FARE_TABLE.adult.offPeak.toFixed(2)} off-peak to $
+            {FARE_TABLE.adult.peak.toFixed(2)} at peak, current as of{" "}
+            {FARE_TABLE.effectiveFrom}.
+          </p>
+        </li>
+        <li>
+          <p class="fare-facts__label">Daily cap</p>
+          <p class="fare-facts__detail">
+            Adult weekday travel is capped at $
+            {FARE_TABLE.dailyCapAdultWeekday.toFixed(2)} a day — the rest of
+            that day's trips are free.
+          </p>
+        </li>
+        <li>
+          <p class="fare-facts__label">Monthly cap</p>
+          <p class="fare-facts__detail">
+            After {FARE_TABLE.monthlyCapTrips} paid trips in a calendar month,
+            the rest of that month's travel is free.
+          </p>
+        </li>
+        <li>
+          <p class="fare-facts__label">Free transfers</p>
+          <p class="fare-facts__detail">
+            Switch between bus and light rail within{" "}
+            {FARE_TABLE.transferWindowMinutes} minutes of your first tap at no
+            extra cost.
+          </p>
+        </li>
+      </ul>
+    </BentoTile>
+  </div>
 </BaseLayout>
 
 <script>
@@ -113,16 +147,6 @@ const presetAmounts = [10, 20, 50, 100];
 </script>
 
 <style>
-  .top-up-card {
-    max-width: 28rem;
-    margin: var(--space-6) auto;
-    padding: var(--space-6);
-    background: var(--color-surface);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
-  }
-
   .top-up-card-lede {
     color: var(--color-text-muted);
     margin-bottom: var(--space-5);
@@ -143,11 +167,23 @@ const presetAmounts = [10, 20, 50, 100];
     margin-top: var(--space-4);
   }
 
-  .top-up-fares-note {
-    margin: var(--space-5) 0 0;
-    padding-top: var(--space-4);
-    border-top: var(--border-width) solid var(--color-border);
-    font-size: var(--text-xs);
+  .fare-facts {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .fare-facts__label {
+    font-weight: 600;
+    margin: 0 0 var(--space-1);
+  }
+
+  .fare-facts__detail {
     color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin: 0;
   }
 </style>
