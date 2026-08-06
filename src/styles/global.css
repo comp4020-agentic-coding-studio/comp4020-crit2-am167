@@ -139,6 +139,25 @@ select {
   border-color: var(--color-text-muted);
 }
 
+/* Ties the top-up action to its result — a top-up shows up as a green
+   balance delta, so the button that triggers it uses the same status
+   colour rather than the neutral action colour. */
+.btn.positive {
+  background: var(--color-status);
+  color: var(--color-action-contrast);
+}
+
+.btn.positive:hover {
+  background: color-mix(in srgb, var(--color-status) 85%, white);
+  color: var(--color-action-contrast);
+}
+
+.btn.positive:disabled {
+  background: var(--color-surface-raised);
+  color: var(--color-text-dim);
+  cursor: not-allowed;
+}
+
 .btn.full-width {
   width: 100%;
 }

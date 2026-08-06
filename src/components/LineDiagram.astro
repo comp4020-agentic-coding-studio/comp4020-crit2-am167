@@ -2,53 +2,81 @@
 import { LIGHT_RAIL_LINE } from "../lib/fixtures";
 
 const { stops, nextStopIndex, name } = LIGHT_RAIL_LINE;
+
+// Only the stops immediately around "you are here" — this panel's job is
+// position-in-journey, not a full timetable (that's what Live departures is
+// for, one card over).
+const STOPS_BEFORE = 2;
+const STOPS_AFTER = 2;
+const windowStart = Math.max(0, nextStopIndex - STOPS_BEFORE);
+const windowEnd = Math.min(stops.length - 1, nextStopIndex + STOPS_AFTER);
+const windowStops = stops.slice(windowStart, windowEnd + 1);
+const hiddenBefore = windowStart;
+const hiddenAfter = stops.length - 1 - windowEnd;
 ---
 
 <div class="line-diagram">
   <p class="line-diagram__eyebrow">{name}</p>
+  {
+    hiddenBefore > 0 && (
+      <p class="line-diagram__more">
+        ⋯ {hiddenBefore} earlier stop{hiddenBefore === 1 ? "" : "s"}
+      </p>
+    )
+  }
   <ol class="line-diagram__stops">
     {
-      stops.map((stop, i) => (
-        <li
-          class:list={[
-            "line-diagram__stop",
-            i < nextStopIndex && "is-passed",
-            i === nextStopIndex && "is-next",
-          ]}
-        >
-          <span class="line-diagram__dot" aria-hidden="true" />
-          <span class="line-diagram__name">{stop}</span>
-          {i === nextStopIndex && (
-            <span class="line-diagram__live">
-              <span class="line-diagram__live-dot" aria-hidden="true" />
-              Live · next stop
-            </span>
-          )}
-        </li>
-      ))
+      windowStops.map((stop, i) => {
+        const stopIndex = windowStart + i;
+        return (
+          <li
+            class:list={[
+              "line-diagram__stop",
+              stopIndex < nextStopIndex && "is-passed",
+              stopIndex === nextStopIndex && "is-next",
+            ]}
+          >
+            <span class="line-diagram__dot" aria-hidden="true" />
+            <span class="line-diagram__name">{stop}</span>
+            {stopIndex === nextStopIndex && (
+              <span class="line-diagram__here">You are here</span>
+            )}
+          </li>
+        );
+      })
     }
   </ol>
+  {
+    hiddenAfter > 0 && (
+      <p class="line-diagram__more">
+        ⋯ {hiddenAfter} more stop{hiddenAfter === 1 ? "" : "s"}
+      </p>
+    )
+  }
 </div>
 
 <style>
   .line-diagram {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-2);
     height: 100%;
-    background: var(--color-surface);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-card);
-    padding: var(--space-5) var(--space-5) var(--space-6);
   }
 
   .line-diagram__eyebrow {
-    margin: 0;
+    margin: 0 0 var(--space-2);
     font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-sm);
     letter-spacing: 0.01em;
     color: var(--color-text);
+  }
+
+  .line-diagram__more {
+    margin: 0;
+    padding-left: var(--space-4);
+    font-size: var(--text-xs);
+    color: var(--color-text-dim);
   }
 
   .line-diagram__stops {
@@ -117,22 +145,12 @@ const { stops, nextStopIndex, name } = LIGHT_RAIL_LINE;
     animation: line-diagram-pulse 2s ease-in-out infinite;
   }
 
-  .line-diagram__live {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
+  .line-diagram__here {
     font-size: var(--text-xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-status);
-  }
-
-  .line-diagram__live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--color-status);
   }
 
   @keyframes line-diagram-pulse {
@@ -148,52 +166,6 @@ const { stops, nextStopIndex, name } = LIGHT_RAIL_LINE;
   @media (prefers-reduced-motion: reduce) {
     .line-diagram__stop.is-next .line-diagram__dot {
       animation: none;
-    }
-  }
-
-  /* Below the desktop two-column dashboard grid, the spine runs sideways
-     as a scrollable strip instead of a full-height sidebar. */
-  @media (max-width: 1023px) {
-    .line-diagram {
-      height: auto;
-    }
-
-    .line-diagram__stops {
-      flex-direction: row;
-      align-items: flex-start;
-      overflow-x: auto;
-      min-width: 0;
-      padding: var(--space-2) var(--space-1) var(--space-3);
-      gap: var(--space-1);
-      scroll-snap-type: x proximity;
-    }
-
-    .line-diagram__stops::before {
-      left: 0.5rem;
-      right: 0.5rem;
-      top: 3px;
-      bottom: auto;
-      height: 2px;
-      width: auto;
-    }
-
-    .line-diagram__stop {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4) 0 var(--space-3);
-      min-width: 6.5rem;
-      scroll-snap-align: start;
-    }
-
-    .line-diagram__dot {
-      left: 0;
-      top: -1px;
-      transform: translate(-50%, -50%);
-    }
-
-    .line-diagram__name {
-      white-space: normal;
     }
   }
 </style>

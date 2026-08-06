@@ -29,32 +29,33 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
 <div class="dashboard">
   <h1 class="visually-hidden">Dashboard</h1>
 
-  <section class="dashboard__primary">
+  <section class="dashboard__top-row">
     <BentoTile size="hero">
       <BalanceCard />
     </BentoTile>
-    <div class="dashboard__status-stack">
-      <BentoTile>
-        <StatusCard
-          dataRole="auto-top-up-status"
-          status={DEFAULT_AUTO_TOP_UP.enabled ? "active" : "off"}
-          label="Auto top-up"
-          detail={autoTopUpDetail}
-          href="../auto-top-up/"
-          linkText="Manage auto top-up"
-        />
-      </BentoTile>
-      <BentoTile>
-        <StatusCard
-          dataRole="concession-status"
-          status="active"
-          label="Concession"
-          detail={concessionDetail}
-          href="../concession/"
-          linkText="Manage concession"
-        />
-      </BentoTile>
-    </div>
+    <BentoTile>
+      <StatusCard
+        dataRole="auto-top-up-status"
+        status={DEFAULT_AUTO_TOP_UP.enabled ? "active" : "off"}
+        label="Auto top-up"
+        detail={autoTopUpDetail}
+        href="../auto-top-up/"
+        linkText="Manage auto top-up"
+      />
+    </BentoTile>
+    <BentoTile>
+      <StatusCard
+        dataRole="concession-status"
+        status="active"
+        label="Concession"
+        detail={concessionDetail}
+        href="../concession/"
+        linkText="Manage concession"
+      />
+    </BentoTile>
+    <BentoTile>
+      <LineDiagram />
+    </BentoTile>
   </section>
 
   <section class="dashboard__departures">
@@ -87,10 +88,6 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
       </ul>
     </BentoTile>
   </section>
-
-  <aside class="dashboard__line">
-    <LineDiagram />
-  </aside>
 </div>
 
 <script>
@@ -128,56 +125,17 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
 
 <style>
   .dashboard {
-    display: grid;
-    gap: var(--space-6);
-    grid-template-columns: minmax(0, 1fr) 21rem;
-    grid-template-areas:
-      "primary line"
-      "departures line"
-      "history line";
-    align-items: start;
-  }
-
-  .dashboard__primary,
-  .dashboard__departures,
-  .dashboard__history,
-  .dashboard__line {
-    /* Grid items default to min-width: auto, which lets the line diagram's
-       intrinsic content width (14 stops) push the whole page wider on
-       narrow viewports instead of scrolling within its own box. */
-    min-width: 0;
-  }
-
-  .dashboard__primary {
-    grid-area: primary;
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    gap: var(--space-5);
-  }
-
-  .dashboard__status-stack {
     display: flex;
     flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .dashboard__top-row {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr);
     gap: var(--space-5);
-  }
-
-  .dashboard__departures {
-    grid-area: departures;
-  }
-
-  .dashboard__history {
-    grid-area: history;
-  }
-
-  .dashboard__line {
-    grid-area: line;
-    position: sticky;
-    top: var(--space-6);
-    height: calc(100vh - var(--space-8));
-  }
-
-  .dashboard__line :global(.line-diagram) {
-    height: 100%;
+    align-items: stretch;
   }
 
   .dashboard__section-head {
@@ -249,28 +207,14 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
   }
 
   @media (max-width: 1023px) {
-    .dashboard {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "primary"
-        "departures"
-        "line"
-        "history";
-    }
-
-    .dashboard__primary {
-      grid-template-columns: 1fr;
-    }
-
-    .dashboard__line {
-      position: static;
-      height: auto;
+    .dashboard__top-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (max-width: 640px) {
-    .dashboard__status-stack {
-      flex-direction: column;
+    .dashboard__top-row {
+      grid-template-columns: 1fr;
     }
   }
 </style>

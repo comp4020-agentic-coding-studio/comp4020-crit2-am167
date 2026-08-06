@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
 
+import { ACCOUNT_NAME } from "../lib/fixtures";
+
 interface Props {
   title: string;
   /**
@@ -14,9 +16,13 @@ interface Props {
   /** Lets the dashboard fill wide viewports instead of sitting inside the
    * narrower reading-width column the form/settings pages use. */
   wide?: boolean;
+  /** False only on the login/signup pages themselves — everywhere else the
+   * app is already showing a signed-in user's balance and trips, so the nav
+   * shows the account chip instead of "Log in" / "Sign up". */
+  loggedIn?: boolean;
 }
 
-const { title, depth = 1, wide = false } = Astro.props;
+const { title, depth = 1, wide = false, loggedIn = true } = Astro.props;
 const up = depth === 0 ? "./" : "../";
 
 const navLinks = [
@@ -72,8 +78,21 @@ const navLinks = [
             }
           </ul>
           <ul class="primary-nav__auth">
-            <li><a href={`${up}login/`}>Log in</a></li>
-            <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
+            {
+              loggedIn ? (
+                <li class="account-chip">
+                  <span class="account-chip__avatar" aria-hidden="true">
+                    {ACCOUNT_NAME.charAt(0)}
+                  </span>
+                  <span class="account-chip__name">{ACCOUNT_NAME}</span>
+                </li>
+              ) : (
+                <>
+                  <li><a href={`${up}login/`}>Log in</a></li>
+                  <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
+                </>
+              )
+            }
           </ul>
         </div>
       </nav>
@@ -209,6 +228,29 @@ const navLinks = [
   .primary-nav__auth a.is-primary:hover {
     background: var(--color-action-hover);
     color: var(--color-action-contrast);
+  }
+
+  .account-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .account-chip__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-surface-raised);
+    border: var(--border-width) solid var(--color-border);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
   }
 
   @media (min-width: 720px) {

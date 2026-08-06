@@ -447,3 +447,44 @@ the diagram's own scroll region still has `scrollWidth (1516) > clientWidth
 should be, none where it shouldn't. This is exactly the "measure, don't
 eyeball" instruction in `CLAUDE.md` earning its keep: the screenshot alone
 would have shipped this bug.
+
+## 2026-08-06 --- tightening pass on the fintech redesign
+
+Went through a round of feedback on the dark fintech dashboard (leftover
+marketing chrome, an overgrown stop list, redundant info, uneven card
+heights, flat departure rows, a generic top-up button) and fixed each:
+
+- **Nav contradiction**: swapped the top nav's "Log in" / "Sign up" links for
+  an account chip (avatar initial + name) on every page except login/signup
+  themselves, via a new `loggedIn` prop on `BaseLayout`. Those two auth pages
+  keep the old links since they're the one context where they're not a lie.
+- **Stop list**: `LineDiagram` used to render the full 14-stop Light Rail
+  Stage 1 alignment top-to-bottom; condensed it to a 2-before/2-after window
+  around `nextStopIndex` (5 stops), with "⋯ N earlier/more stops" markers so
+  it's honest about being a slice, not the whole line.
+- **Redundant info**: the condensed stop's badge used to read "Live · next
+  stop" with its own pulsing dot — the same "live" framing as the Live
+  departures card one panel over, competing for the same job. Reworded to
+  "You are here" (position, not timing) and dropped the duplicate live dot;
+  Live departures keeps ETAs, the line diagram keeps position.
+- **Card grid**: Balance, Auto top-up, Concession and the line panel used to
+  be an uneven 2-column primary block plus a full-viewport-height sticky
+  sidebar. Restructured into one `dashboard__top-row` grid so all four
+  stretch to equal height — verified via `getBoundingClientRect()` on all
+  four `.bento-tile`s rather than eyeballing (318.77px each at 1920×1080).
+- **Departure rows**: added a ~5% `color-mix` background tint per mode
+  (bus/rail) alongside the existing left-edge accent bar, so the list scans
+  by colour without reading each route label.
+- **Top-up button**: switched from the neutral `.btn.primary` to a new
+  `.btn.positive` (using `--color-status`, the same green as the "+$20.00
+  top-up" delta text) on both the dashboard's Top up link and the top-up
+  page's submit button — ties the action to its result, consistent with
+  `tokens.css`'s own stated rule that the status colour family covers "a
+  balance change."
+
+Verified both viewports in real Chrome via `pnpm preview` (not `file://`):
+1920×1080 and 390×844, plus the collapsed mobile nav panel and the login
+page (confirming the `loggedIn={false}` path still shows the original auth
+links). `pnpm check` green throughout (87 tests). Chrome DevTools MCP's
+shared browser profile was briefly locked by another concurrent session
+mid-task; waited for it to release rather than fighting it.
