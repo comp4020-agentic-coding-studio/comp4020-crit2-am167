@@ -1,0 +1,155 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { DEFAULT_AUTO_TOP_UP } from "../lib/demo-state";
+---
+
+<BaseLayout title="Auto top-up">
+  <section class="settings-card">
+    <h1>Auto top-up</h1>
+    <p class="settings-card-lede">
+      Never think about your balance again — top up automatically when it
+      runs low.
+    </p>
+    <form id="auto-top-up-form">
+      <div class="field field-toggle">
+        <label for="auto-top-up-enabled">
+          <input
+            type="checkbox"
+            id="auto-top-up-enabled"
+            role="switch"
+            checked={DEFAULT_AUTO_TOP_UP.enabled}
+          />
+          Turn on auto top-up
+        </label>
+      </div>
+      <div class="field">
+        <label for="threshold">When my balance drops below ($)</label>
+        <input
+          type="number"
+          id="threshold"
+          min="1"
+          step="1"
+          value={DEFAULT_AUTO_TOP_UP.thresholdCents / 100}
+        />
+      </div>
+      <div class="field">
+        <label for="target">Top up to ($)</label>
+        <input
+          type="number"
+          id="target"
+          min="5"
+          step="1"
+          value={DEFAULT_AUTO_TOP_UP.targetCents / 100}
+        />
+      </div>
+      <div class="field">
+        <label for="method">Payment method</label>
+        <select id="method">
+          <option value="visa">Visa ····1234</option>
+          <option value="mastercard">Mastercard ····5678</option>
+        </select>
+      </div>
+      <p class="field-hint" id="preview-sentence"></p>
+      <button type="submit" class="btn primary full-width">
+        Save settings
+      </button>
+      <p class="field-hint" id="save-confirmation" hidden>Saved.</p>
+    </form>
+  </section>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import type { AutoTopUpState } from "../lib/demo-state";
+
+  const enabled = document.querySelector<HTMLInputElement>(
+    "#auto-top-up-enabled",
+  );
+  const threshold = document.querySelector<HTMLInputElement>("#threshold");
+  const target = document.querySelector<HTMLInputElement>("#target");
+  const method = document.querySelector<HTMLSelectElement>("#method");
+  const preview = document.querySelector<HTMLElement>("#preview-sentence");
+  const form = document.querySelector<HTMLFormElement>("#auto-top-up-form");
+  const confirmation = document.querySelector<HTMLElement>(
+    "#save-confirmation",
+  );
+
+  function updatePreview() {
+    if (!preview) return;
+    if (!enabled?.checked) {
+      preview.textContent =
+        "Auto top-up is off — you'll need to top up manually.";
+      return;
+    }
+    const thresholdDollars = Number(threshold?.value) || 0;
+    const targetDollars = Number(target?.value) || 0;
+    preview.textContent = `When your balance drops below $${thresholdDollars.toFixed(2)}, we'll add funds to bring it to $${targetDollars.toFixed(2)}.`;
+  }
+
+  function loadState() {
+    const state = demoState.getAutoTopUp();
+    if (enabled) enabled.checked = state.enabled;
+    if (threshold) threshold.value = String(state.thresholdCents / 100);
+    if (target) target.value = String(state.targetCents / 100);
+    if (method) method.value = state.method;
+    updatePreview();
+  }
+
+  [enabled, threshold, target, method].forEach((el) =>
+    el?.addEventListener("input", updatePreview),
+  );
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const state: AutoTopUpState = {
+      enabled: enabled?.checked ?? false,
+      thresholdCents: Math.round((Number(threshold?.value) || 0) * 100),
+      targetCents: Math.round((Number(target?.value) || 0) * 100),
+      method: (method?.value as AutoTopUpState["method"]) ?? "visa",
+    };
+    demoState.setAutoTopUp(state);
+    confirmation?.removeAttribute("hidden");
+    setTimeout(() => confirmation?.setAttribute("hidden", ""), 2000);
+  });
+
+  loadState();
+</script>
+
+<style>
+  .settings-card {
+    max-width: 30rem;
+    margin: var(--space-6) auto;
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .settings-card-lede {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  .field-toggle label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+  }
+
+  .field-toggle input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  #preview-sentence {
+    margin-bottom: var(--space-4);
+  }
+
+  #save-confirmation {
+    text-align: center;
+    color: var(--color-success);
+    margin-top: var(--space-3);
+  }
+</style>

@@ -191,3 +191,22 @@ date-range/page-size controls. No icons either --- a text label ("Bus" /
 adding three more components for a page this small. Checked both viewports;
 the row layout wraps cleanly at 390px without needing separate mobile
 markup.
+
+### Milestone 7: auto top-up + concession
+
+`auto-top-up.astro`: an actual checkbox with `role="switch"` (not a "0 =
+disabled" numeric hack), threshold/target fields, and a plain-language
+preview sentence that updates live as you type, matching the real system's
+threshold/discount framing. `concession.astro`: reuses `BentoTile` +
+`StatusCard` (rather than inventing a third card style) for the status
+block, a one-field form to change type, and the full six-category catalogue
+with the real 30 Jun 2026 expiry policy. Both are single-purpose forms, no
+extra chrome, per the scope note.
+
+Verified the cross-page state loop by hand: turned auto top-up on with a
+$10/$25 threshold/target on its settings page, saved, and confirmed the
+dashboard's status tile picked up "On --- tops up to $25.00 below $10.00"
+with the border switching from muted to green --- the same
+`localStorage`-round-trip pattern proven in milestone 5's top-up flow, now
+holding for a second, differently-shaped piece of state. This closes out
+the full 9-page sitemap from `PLAN.md`; only the final polish pass is left.

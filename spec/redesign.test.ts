@@ -104,3 +104,33 @@ describe("redesign: top-up offers preset amounts, not a bare field", () => {
     ).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe("redesign: concession catalogue names real categories", () => {
+  it("concession/index.html names several real concession categories", () => {
+    const concession = pages.find(({ name }) => name === "concession/index.html");
+    expect(concession, "expected a built concession page at concession/index.html").toBeTruthy();
+    if (!concession) return;
+
+    const text = concession.doc.body.textContent ?? "";
+    const expectedNames = ["Students", "Seniors", "Veterans"];
+    for (const name of expectedNames) {
+      expect(text.includes(name), `expected the concession page to name "${name}"`).toBe(true);
+    }
+  });
+});
+
+describe("redesign: auto top-up is a real toggle, not a hidden zero", () => {
+  it("auto-top-up/index.html has an actual checkbox/switch control", () => {
+    const autoTopUp = pages.find(({ name }) => name === "auto-top-up/index.html");
+    expect(autoTopUp, "expected a built auto-top-up page at auto-top-up/index.html").toBeTruthy();
+    if (!autoTopUp) return;
+
+    const toggle = autoTopUp.doc.querySelector(
+      'input[type="checkbox"], [role="switch"]',
+    );
+    expect(
+      toggle,
+      "expected an explicit checkbox/switch control, not a '0 = disabled' numeric-only hack",
+    ).toBeTruthy();
+  });
+});
