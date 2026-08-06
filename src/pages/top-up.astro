@@ -1,0 +1,138 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AmountChip from "../components/AmountChip.astro";
+
+const presetAmounts = [10, 20, 50, 100];
+---
+
+<BaseLayout title="Top up">
+  <section class="top-up-card">
+    <h1>Top up your balance</h1>
+    <p class="top-up-card-lede">Choose an amount, or enter your own.</p>
+
+    <div id="top-up-form-view">
+      <div class="amount-chips" role="group" aria-label="Preset amounts">
+        {presetAmounts.map((amount) => <AmountChip value={amount} />)}
+      </div>
+      <div class="field">
+        <label for="custom-amount">Custom amount ($)</label>
+        <input id="custom-amount" type="number" min="5" max="500" step="0.05" />
+      </div>
+      <button
+        type="button"
+        id="top-up-submit"
+        class="btn primary full-width"
+        disabled
+      >
+        Top up
+      </button>
+    </div>
+
+    <div id="top-up-processing-view" class="top-up-status" hidden>
+      <p>Processing your top-up…</p>
+    </div>
+
+    <div id="top-up-success-view" class="top-up-status" hidden>
+      <p>
+        Top-up complete. Your new balance is{" "}
+        <strong id="new-balance" class="tabular-nums"></strong>.
+      </p>
+      <a href="../dashboard/" class="btn secondary full-width"
+        >Back to dashboard</a
+      >
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import { formatCents } from "../lib/format";
+
+  const chips = document.querySelectorAll<HTMLButtonElement>(".amount-chip");
+  const customInput = document.querySelector<HTMLInputElement>(
+    "#custom-amount",
+  );
+  const submitButton = document.querySelector<HTMLButtonElement>(
+    "#top-up-submit",
+  );
+  const formView = document.querySelector<HTMLElement>("#top-up-form-view");
+  const processingView = document.querySelector<HTMLElement>(
+    "#top-up-processing-view",
+  );
+  const successView = document.querySelector<HTMLElement>(
+    "#top-up-success-view",
+  );
+  const newBalanceEl = document.querySelector<HTMLElement>("#new-balance");
+
+  let selectedDollars: number | null = null;
+
+  function updateSubmitState() {
+    if (submitButton) {
+      submitButton.disabled = !(selectedDollars !== null && selectedDollars > 0);
+    }
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      chips.forEach((c) => c.setAttribute("aria-pressed", "false"));
+      chip.setAttribute("aria-pressed", "true");
+      selectedDollars = Number(chip.dataset.amount);
+      if (customInput) customInput.value = "";
+      updateSubmitState();
+    });
+  });
+
+  customInput?.addEventListener("input", () => {
+    chips.forEach((c) => c.setAttribute("aria-pressed", "false"));
+    const value = Number(customInput.value);
+    selectedDollars = Number.isFinite(value) && value > 0 ? value : null;
+    updateSubmitState();
+  });
+
+  submitButton?.addEventListener("click", () => {
+    if (selectedDollars === null) return;
+    formView?.setAttribute("hidden", "");
+    processingView?.removeAttribute("hidden");
+
+    setTimeout(() => {
+      const newBalanceCents = demoState.addBalanceCents(
+        Math.round(selectedDollars! * 100),
+      );
+      if (newBalanceEl) newBalanceEl.textContent = formatCents(newBalanceCents);
+      processingView?.setAttribute("hidden", "");
+      successView?.removeAttribute("hidden");
+    }, 1000);
+  });
+</script>
+
+<style>
+  .top-up-card {
+    max-width: 28rem;
+    margin: var(--space-6) auto;
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .top-up-card-lede {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+  }
+
+  .amount-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  .top-up-status {
+    text-align: center;
+  }
+
+  .top-up-status .btn {
+    margin-top: var(--space-4);
+  }
+</style>

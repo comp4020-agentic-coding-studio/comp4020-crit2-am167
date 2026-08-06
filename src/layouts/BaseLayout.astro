@@ -3,9 +3,26 @@ import "../styles/global.css";
 
 interface Props {
   title: string;
+  /**
+   * How many directory levels below the site root this page's *output
+   * file* sits — not its URL. Every page except index.astro and
+   * 404.astro (both of which Astro emits at the root, alongside each
+   * other) builds to `pagename/index.html`, one level deeper. Nav links
+   * need "../" from those, "./" from the two root-level pages.
+   */
+  depth?: 0 | 1;
 }
 
-const { title } = Astro.props;
+const { title, depth = 1 } = Astro.props;
+const up = depth === 0 ? "./" : "../";
+
+const navLinks = [
+  { href: `${up}dashboard/`, label: "Dashboard" },
+  { href: `${up}trips/`, label: "Trip history" },
+  { href: `${up}top-up/`, label: "Top up" },
+  { href: `${up}auto-top-up/`, label: "Auto top-up" },
+  { href: `${up}concession/`, label: "Concession" },
+];
 ---
 
 <!doctype html>
@@ -13,16 +30,201 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <title>{title} — MyWay+</title>
   </head>
   <body>
-    <header>
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
+    <header class="site-header">
+      <div class="site-header__bar">
+        <a class="wordmark" href={up}>
+          <span class="wordmark__mark">M</span>
+          yWay+
+        </a>
+        <div class="site-header__actions">
+          <button
+            type="button"
+            id="nav-toggle"
+            class="nav-toggle"
+            aria-expanded="false"
+            aria-controls="primary-nav-panel"
+          >
+            Menu
+          </button>
+        </div>
+      </div>
+      <nav aria-label="Primary" class="primary-nav">
+        <div id="primary-nav-panel" class="primary-nav__panel">
+          <ul class="primary-nav__links">
+            {
+              navLinks.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+          <ul class="primary-nav__auth">
+            <li><a href={`${up}login/`}>Log in</a></li>
+            <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
+          </ul>
+        </div>
       </nav>
     </header>
     <main>
       <slot />
     </main>
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p>
+          A student prototype, not an official Transport Canberra service.
+          For the real thing, call <strong>13&nbsp;17&nbsp;10</strong> or
+          contact Access Canberra.
+        </p>
+      </div>
+    </footer>
+    <script>
+      const navToggle = document.querySelector<HTMLButtonElement>("#nav-toggle");
+      const navPanel = document.querySelector<HTMLElement>("#primary-nav-panel");
+      navToggle?.addEventListener("click", () => {
+        const isOpen = navPanel?.classList.toggle("is-open") ?? false;
+        navToggle.setAttribute("aria-expanded", String(isOpen));
+        navToggle.textContent = isOpen ? "Close" : "Menu";
+      });
+    </script>
   </body>
 </html>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: var(--border-width) solid var(--color-border);
+    background: rgb(10 10 18 / 72%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .site-header__bar {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--color-text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .wordmark__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-brand-strong);
+    color: var(--color-brand-contrast);
+    font-size: var(--text-sm);
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .nav-toggle {
+    border: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .primary-nav__panel {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 var(--space-5) var(--space-4);
+  }
+
+  .primary-nav__panel.is-open {
+    display: flex;
+  }
+
+  .primary-nav__links,
+  .primary-nav__auth {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .primary-nav__links a,
+  .primary-nav__auth a {
+    display: inline-block;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+
+  .primary-nav__links a:hover,
+  .primary-nav__auth a:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-brand);
+  }
+
+  .primary-nav__auth a.is-primary {
+    background: var(--color-brand-strong);
+    color: var(--color-brand-contrast);
+  }
+
+  .primary-nav__auth a.is-primary:hover {
+    background: var(--color-brand-stronger);
+    color: var(--color-brand-contrast);
+  }
+
+  @media (min-width: 720px) {
+    .nav-toggle {
+      display: none;
+    }
+
+    .primary-nav__panel {
+      display: flex !important;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-5) var(--space-4);
+    }
+  }
+
+  .site-footer {
+    border-top: var(--border-width) solid var(--color-border);
+    margin-top: var(--space-8);
+  }
+
+  .site-footer__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-5);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+</style>

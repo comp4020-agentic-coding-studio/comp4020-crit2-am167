@@ -1,0 +1,48 @@
+---
+import { DEFAULT_BALANCE_CENTS } from "../lib/demo-state";
+import { formatCents } from "../lib/format";
+
+const fallback = formatCents(DEFAULT_BALANCE_CENTS);
+---
+
+<div class="balance-card">
+  <p class="balance-card__label">Balance</p>
+  <p class="balance-card__amount tabular-nums" id="balance-amount">
+    {fallback}
+  </p>
+  <a href="../top-up/" class="btn primary">Top up</a>
+</div>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import { formatCents } from "../lib/format";
+
+  const el = document.querySelector<HTMLElement>("#balance-amount");
+  if (el) {
+    el.textContent = formatCents(demoState.getBalanceCents());
+  }
+</script>
+
+<style>
+  .balance-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .balance-card__label {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .balance-card__amount {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .balance-card .btn {
+    align-self: flex-start;
+  }
+</style>

@@ -1,0 +1,146 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BentoTile from "../components/BentoTile.astro";
+import StatusCard from "../components/StatusCard.astro";
+import { CONCESSION_TYPES } from "../lib/fixtures";
+import { DEFAULT_CONCESSION } from "../lib/demo-state";
+import { formatDate } from "../lib/format";
+
+const currentType = CONCESSION_TYPES.find(
+  (type) => type.id === DEFAULT_CONCESSION.typeId,
+);
+const statusDetail = currentType
+  ? `${currentType.name} — active until ${formatDate(DEFAULT_CONCESSION.expiry)}`
+  : "No concession on file";
+---
+
+<BaseLayout title="Concession">
+  <h1>Concession</h1>
+  <div class="page-stack">
+    <BentoTile size="hero">
+      <StatusCard
+        dataRole="concession-page-status"
+        status="active"
+        label="Your concession"
+        detail={statusDetail}
+      />
+    </BentoTile>
+
+    <BentoTile>
+      <h2>Change concession type</h2>
+      <form id="concession-form">
+        <div class="field">
+          <label for="concession-type">Concession type</label>
+          <select id="concession-type">
+            {
+              CONCESSION_TYPES.map((type) => (
+                <option value={type.id}>{type.name}</option>
+              ))
+            }
+          </select>
+        </div>
+        <button type="submit" class="btn primary full-width"
+          >Update concession</button
+        >
+        <p class="field-hint" id="concession-saved" hidden>Updated.</p>
+      </form>
+    </BentoTile>
+
+    <BentoTile>
+      <h2>Eligible concession types</h2>
+      <ul class="concession-catalogue">
+        {
+          CONCESSION_TYPES.map((type) => (
+            <li>
+              <p class="concession-catalogue__name">{type.name}</p>
+              <p class="concession-catalogue__desc">{type.description}</p>
+              <p class="concession-catalogue__expiry">
+                {type.expiresJune2026
+                  ? "Expires 30 Jun 2026 — renew before then to keep your concession fare."
+                  : "Doesn't expire annually."}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </BentoTile>
+  </div>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import { CONCESSION_TYPES } from "../lib/fixtures";
+  import { formatDate } from "../lib/format";
+
+  const select = document.querySelector<HTMLSelectElement>(
+    "#concession-type",
+  );
+  const form = document.querySelector<HTMLFormElement>("#concession-form");
+  const savedNote = document.querySelector<HTMLElement>("#concession-saved");
+  const statusDetailEl = document.querySelector<HTMLElement>(
+    '[data-role="concession-page-status-detail"]',
+  );
+
+  function render() {
+    const state = demoState.getConcession();
+    if (select) select.value = state.typeId;
+    const type = CONCESSION_TYPES.find((t) => t.id === state.typeId);
+    if (statusDetailEl) {
+      statusDetailEl.textContent = type
+        ? `${type.name} — active until ${formatDate(state.expiry)}`
+        : "No concession on file";
+    }
+  }
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const typeId = select?.value ?? CONCESSION_TYPES[0]!.id;
+    demoState.setConcession({ typeId, expiry: demoState.getConcession().expiry });
+    render();
+    savedNote?.removeAttribute("hidden");
+    setTimeout(() => savedNote?.setAttribute("hidden", ""), 2000);
+  });
+
+  render();
+</script>
+
+<style>
+  .page-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  .concession-catalogue {
+    list-style: none;
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .concession-catalogue__name {
+    font-weight: 600;
+    margin: 0 0 var(--space-1);
+  }
+
+  .concession-catalogue__desc {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    margin: 0 0 var(--space-1);
+  }
+
+  .concession-catalogue__expiry {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  #concession-saved {
+    text-align: center;
+    color: var(--color-success);
+    margin-top: var(--space-3);
+  }
+</style>

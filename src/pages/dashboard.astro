@@ -1,0 +1,157 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BentoTile from "../components/BentoTile.astro";
+import BalanceCard from "../components/BalanceCard.astro";
+import StatusCard from "../components/StatusCard.astro";
+import {
+  DEFAULT_AUTO_TOP_UP,
+  DEFAULT_CONCESSION,
+} from "../lib/demo-state";
+import { CONCESSION_TYPES, SAMPLE_TRIPS } from "../lib/fixtures";
+import { formatCents, formatDate } from "../lib/format";
+
+const recentTrips = SAMPLE_TRIPS.slice(0, 3);
+
+const concessionType = CONCESSION_TYPES.find(
+  (type) => type.id === DEFAULT_CONCESSION.typeId,
+);
+const concessionDetail = concessionType
+  ? `${concessionType.name} — active until ${formatDate(DEFAULT_CONCESSION.expiry)}`
+  : "No concession on file";
+
+const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
+  ? `On — tops up to ${formatCents(DEFAULT_AUTO_TOP_UP.targetCents)} below ${formatCents(DEFAULT_AUTO_TOP_UP.thresholdCents)}`
+  : "Off — you'll need to top up manually";
+---
+
+<BaseLayout title="Dashboard">
+  <h1>Your account</h1>
+  <div class="bento">
+    <BentoTile size="hero">
+      <BalanceCard />
+    </BentoTile>
+    <BentoTile size="medium">
+      <StatusCard
+        dataRole="auto-top-up-status"
+        status={DEFAULT_AUTO_TOP_UP.enabled ? "active" : "off"}
+        label="Auto top-up"
+        detail={autoTopUpDetail}
+        href="../auto-top-up/"
+        linkText="Manage auto top-up"
+      />
+    </BentoTile>
+    <BentoTile size="medium">
+      <StatusCard
+        dataRole="concession-status"
+        status="active"
+        label="Concession"
+        detail={concessionDetail}
+        href="../concession/"
+        linkText="Manage concession"
+      />
+    </BentoTile>
+    <BentoTile size="small">
+      <h2>Recent trips</h2>
+      <ul class="trip-preview">
+        {
+          recentTrips.map((trip) => (
+            <li data-mode={trip.mode}>
+              <span>{trip.route}</span>
+              <span>
+                {trip.from} → {trip.to}
+              </span>
+              <span class="tabular-nums">{formatCents(Math.round(trip.fare * 100))}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <a href="../trips/">See all trip history →</a>
+    </BentoTile>
+  </div>
+</BaseLayout>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+  import { CONCESSION_TYPES } from "../lib/fixtures";
+  import { formatCents, formatDate } from "../lib/format";
+
+  const autoTopUp = demoState.getAutoTopUp();
+  const autoTopUpCard = document.querySelector<HTMLElement>(
+    '[data-role="auto-top-up-status"]',
+  );
+  const autoTopUpDetailEl = document.querySelector<HTMLElement>(
+    '[data-role="auto-top-up-status-detail"]',
+  );
+  if (autoTopUpCard && autoTopUpDetailEl) {
+    autoTopUpCard.dataset.status = autoTopUp.enabled ? "active" : "off";
+    autoTopUpDetailEl.textContent = autoTopUp.enabled
+      ? `On — tops up to ${formatCents(autoTopUp.targetCents)} below ${formatCents(autoTopUp.thresholdCents)}`
+      : "Off — you'll need to top up manually";
+  }
+
+  const concession = demoState.getConcession();
+  const concessionType = CONCESSION_TYPES.find(
+    (type) => type.id === concession.typeId,
+  );
+  const concessionDetailEl = document.querySelector<HTMLElement>(
+    '[data-role="concession-status-detail"]',
+  );
+  if (concessionDetailEl) {
+    concessionDetailEl.textContent = concessionType
+      ? `${concessionType.name} — active until ${formatDate(concession.expiry)}`
+      : "No concession on file";
+  }
+</script>
+
+<style>
+  .bento {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+
+  @media (min-width: 720px) {
+    .bento {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento :global(.bento-tile--hero),
+    .bento :global(.bento-tile--small) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .trip-preview {
+    list-style: none;
+    margin: var(--space-3) 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .trip-preview li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+    padding-left: var(--space-2);
+  }
+
+  .trip-preview li[data-mode="bus"] {
+    border-left-color: var(--color-mode-bus);
+  }
+
+  .trip-preview li[data-mode="light-rail"] {
+    border-left-color: var(--color-mode-tram);
+  }
+
+  .trip-preview li span:first-child {
+    color: var(--color-text);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+</style>
