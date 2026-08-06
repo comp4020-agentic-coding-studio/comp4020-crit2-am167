@@ -11,14 +11,18 @@ site is what gets marked, at both 1920×1080 and 390×844.
 - Never suggest, ask about, or perform publishing/deploying the site (e.g.
   pushing to GitHub Pages, merging to the deploy branch) unless I explicitly
   say so.
-- Don't create git worktrees for this repo unless I explicitly ask for one.
+- Prefer working directly on `main` and avoid creating git worktrees for this
+  repo when there's a choice. If a background or automated session's tooling
+  enforces isolation and requires one, that's fine without asking first ---
+  but default to staying on `main` whenever the work doesn't force otherwise.
 - Any major change (new page, content rewrite, layout or CSS change) needs
   visual verification at both marked viewports (1920×1080 and 390×844) in
-  actual Chrome before it's considered done --- `pnpm check` proves structure,
-  not that a human can read the page. Use `pnpm preview` (not `file://` ---
-  the built site's asset URLs break over the opaque `file://` origin), and
-  measure rather than eyeball where possible (e.g. `scrollWidth === clientWidth`,
-  not just a screenshot).
+  actual Chrome --- but do this once, as a final check once the whole task is
+  done, not after every intermediate step along the way. `pnpm check` proves
+  structure, not that a human can read the page. Use `pnpm preview` (not
+  `file://` --- the built site's asset URLs break over the opaque `file://`
+  origin), and measure rather than eyeball where possible (e.g.
+  `scrollWidth === clientWidth`, not just a screenshot).
 - Internal navigation links use paths relative to the current page (e.g.
   `./`, `./about/`), never `import.meta.env.BASE_URL` or a root-absolute
   path --- the deployed site lives under `/comp4020-crit2-am167/`, and a
