@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
@@ -32,6 +32,26 @@ describe("redesign: navigation stays relative", () => {
           href.startsWith("/"),
           `<a href="${href}"> in nav should be relative, not root-absolute — the deployed site lives under a base path`,
         ).toBe(false);
+      }
+    });
+  }
+});
+
+describe("redesign: nav links resolve to real pages", () => {
+  for (const { name, doc } of pages) {
+    it(`${name}: every nav link resolves to a file that exists in dist/`, () => {
+      const pageDir = dirname(join(DIST, name));
+      for (const link of doc.querySelectorAll("nav a[href]")) {
+        const href = link.getAttribute("href") ?? "";
+        if (!href || href.startsWith("#")) continue;
+        const resolved = resolve(pageDir, href);
+        const candidate = resolved.endsWith(".html")
+          ? resolved
+          : join(resolved, "index.html");
+        expect(
+          existsSync(candidate),
+          `${name}: nav link "${href}" resolves to ${relative(DIST, candidate)}, which doesn't exist in dist/ — this exact class of bug (depth-relative "./" vs "../") broke every non-root page's nav earlier in this build`,
+        ).toBe(true);
       }
     });
   }

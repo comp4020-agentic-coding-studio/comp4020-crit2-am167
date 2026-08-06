@@ -210,3 +210,19 @@ with the border switching from muted to green --- the same
 `localStorage`-round-trip pattern proven in milestone 5's top-up flow, now
 holding for a second, differently-shaped piece of state. This closes out
 the full 9-page sitemap from `PLAN.md`; only the final polish pass is left.
+
+### Milestone 8: polish (scaled down per scope feedback)
+
+One consolidated pass instead of the exhaustive per-page audit `PLAN.md`
+originally described, since Advay flagged the build was scoping past a
+one-week crit: added the nav-resolution test (every `nav` link now checked
+against the actual built `dist/` tree, not just "is it relative") now that
+all nine pages exist --- this is exactly the class of bug that broke every
+non-root page's nav twice earlier in the build, so it's the one polish check
+worth making permanent. Grepped for hardcoded hex colors outside
+`tokens.css` --- none found, so dark-mode coverage is structurally
+guaranteed rather than hoped for. Spot-checked dark mode on the dashboard and
+the auto-top-up form in Chrome rather than walking every page; both correct
+(confirmed via computed-style values, not just eyeballing --- a `#121918`
+card on a `#0b1211` page read as more different than it is in the
+screenshot). `pnpm check`: 87 tests green across all 9 pages.
