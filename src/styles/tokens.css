@@ -35,8 +35,20 @@
   --color-status-bg: rgb(23 120 79 / 12%);
   --color-caution: #9b5c08;
   --color-caution-bg: rgb(155 92 8 / 12%);
+
+  /* Two card tiers, and only two. --shadow-card belongs to the one hero tile
+     on a page (paired with a gradient and --color-border-hero); every other
+     tile gets --shadow-tile, a hairline lift that separates it from the page
+     without competing with the hero. A third tier would flatten the
+     hierarchy the hero exists to create. */
   --shadow-card: 0 1px 2px rgb(23 38 48 / 7%), 0 12px 28px rgb(23 38 48 / 8%);
-  --font-sans: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
+  --shadow-tile: 0 1px 2px rgb(23 38 48 / 5%);
+
+  /* Space Grotesk carries headings, ETAs and fares; Inter carries body copy.
+     Both are geometric-leaning sans faces, so the pairing reads as one voice
+     across the long catalogue and trip-history pages, where a system-ui body
+     against a display heading showed an obvious seam. */
+  --font-sans: "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, helvetica, arial, sans-serif;
   --font-display: "Space Grotesk", var(--font-sans);
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

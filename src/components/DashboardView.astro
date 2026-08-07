@@ -43,8 +43,8 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
         Keep an eye on your next departure, balance, and recent journeys.
       </p>
     </div>
-    <a class="btn secondary dashboard__map-link" href={`${up}live-map/`}>
-      View live network
+    <a class="dashboard__map-link" href={`${up}live-map/`}>
+      View live network →
     </a>
   </header>
 
@@ -52,7 +52,7 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     <BentoTile size="hero">
       <NextTrip departure={nextDeparture} up={up} />
     </BentoTile>
-    <BentoTile>
+    <BentoTile tone="positive">
       <BalanceCard up={up} />
     </BentoTile>
     <BentoTile>
@@ -68,7 +68,8 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
         label="Auto top-up"
         detail={autoTopUpDetail}
         href={`${up}auto-top-up/`}
-        linkText="Manage auto top-up"
+        linkText="Manage"
+        icon="card"
       />
     </BentoTile>
     <BentoTile>
@@ -78,7 +79,8 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
         label="Concession discount"
         detail={concessionDetail}
         href={`${up}concession/`}
-        linkText="Manage concession"
+        linkText="Manage"
+        icon="ticket"
       />
     </BentoTile>
   </section>
@@ -87,15 +89,9 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     <BentoTile>
       <div class="dashboard__section-head">
         <h2>Live departures</h2>
-        <div class="dashboard__section-meta">
-          <span class="dashboard__live-badge">
-            <span class="dashboard__live-dot" aria-hidden="true"></span>
-            Live
-          </span>
-          <span>Demo feed · updated just now</span>
-        </div>
+        <p class="dashboard__section-meta">Demo feed · updated just now</p>
       </div>
-      <ul class="departures-list">
+      <ul class="list-stack">
         {
           DEPARTURES.map((departure) => (
             <DepartureListItem departure={departure} />
@@ -111,7 +107,7 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
         <h2>Recent trips</h2>
         <a href={`${up}trips/`}>See all trip history →</a>
       </div>
-      <ul class="trips-list">
+      <ul class="list-stack">
         {recentTrips.map((trip) => <TripListItem trip={trip} />)}
       </ul>
     </BentoTile>
@@ -185,8 +181,15 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     color: var(--color-text-muted);
   }
 
+  /* A text link, not a button. The hero tile's "Open live map" is the primary
+     path to the same page; two buttons of different weights pointing at one
+     destination just made the reader choose between them. */
   .dashboard__map-link {
     flex-shrink: 0;
+    padding-bottom: var(--space-1);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .dashboard__top-row {
@@ -220,14 +223,14 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     font-size: var(--text-lg);
   }
 
+  /* Static, deliberately. The pulsing "Live" dot lives only on the Next Trip
+     hero now — three pulsing dots on one page all competed for the eye, and
+     this list is the one place where the exact second doesn't matter. */
   .dashboard__section-meta {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: var(--space-3);
+    margin: 0;
     color: var(--color-text-dim);
     font-size: var(--text-xs);
+    text-align: right;
   }
 
   .dashboard__section-head a {
@@ -238,51 +241,6 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
 
   .dashboard__section-head a:hover {
     color: var(--color-action-hover);
-  }
-
-  .dashboard__live-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--text-xs);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-status);
-  }
-
-  .dashboard__live-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--color-status);
-    animation: dashboard-live-pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes dashboard-live-pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.35;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .dashboard__live-dot {
-      animation: none;
-    }
-  }
-
-  .departures-list,
-  .trips-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
   }
 
   @media (max-width: 1023px) {
@@ -301,12 +259,9 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     }
 
     .dashboard__intro {
-      align-items: stretch;
+      align-items: flex-start;
       flex-direction: column;
-    }
-
-    .dashboard__map-link {
-      width: 100%;
+      gap: var(--space-3);
     }
 
     .dashboard__top-row {
@@ -327,7 +282,7 @@ const autoTopUpDetail = DEFAULT_AUTO_TOP_UP.enabled
     }
 
     .dashboard__section-meta {
-      justify-content: flex-start;
+      text-align: left;
     }
   }
 </style>

@@ -26,9 +26,16 @@ const { value } = Astro.props;
     cursor: pointer;
   }
 
+  .amount-chip:hover {
+    border-color: var(--color-status);
+  }
+
+  /* Green, not the neutral action colour: picking an amount is the first half
+     of the same money action the green "Top up" button completes, and the
+     result shows up as a green balance delta. */
   .amount-chip[aria-pressed="true"] {
-    background: var(--color-action);
+    background: var(--color-status);
     color: var(--color-action-contrast);
-    border-color: var(--color-action);
+    border-color: var(--color-status);
   }
 </style>

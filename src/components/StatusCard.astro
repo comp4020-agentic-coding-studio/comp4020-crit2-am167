@@ -5,36 +5,82 @@ interface Props {
   detail: string;
   href?: string;
   linkText?: string;
+  /** Gives the tile a focal point so a two-line settings card doesn't read as
+   * placeholder text in an oversized tile. */
+  icon?: "card" | "ticket";
   /** Lets a page-level script find and update this card's detail text once
    * it reads the real client-side state. */
   dataRole?: string;
 }
 
-const { status, label, detail, href, linkText, dataRole } = Astro.props;
+const {
+  status,
+  label,
+  detail,
+  href,
+  linkText,
+  icon = "card",
+  dataRole,
+} = Astro.props;
 ---
 
 <div class="status-card" data-status={status} data-role={dataRole}>
-  <p class="status-card__label">{label}</p>
-  <p class="status-card__detail" data-role={dataRole && `${dataRole}-detail`}>
-    {detail}
-  </p>
+  <span class="status-card__icon" aria-hidden="true">
+    {
+      icon === "ticket" ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            d="M3 9.5V7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2.5a2.5 2.5 0 0 0 0 5V17a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2.5a2.5 2.5 0 0 0 0-5Z"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+          <path d="M12 9v6" stroke-width="1.6" stroke-dasharray="2 2" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="14"
+            rx="2.5"
+            stroke-width="1.6"
+          />
+          <path d="M3 10h18" stroke-width="1.6" />
+          <path d="M7 14.5h4" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      )
+    }
+  </span>
+
+  <div class="status-card__body">
+    <p class="status-card__label">{label}</p>
+    <p class="status-card__detail" data-role={dataRole && `${dataRole}-detail`}>
+      {detail}
+    </p>
+  </div>
+
   {
     href && linkText && (
       <a class="status-card__link" href={href}>
-        {linkText}
+        <span class="status-card__link-text">{linkText}</span>
+        <span class="status-card__chevron" aria-hidden="true">→</span>
       </a>
     )
   }
 </div>
 
 <style>
+  /* Horizontal: icon, then label over status, then the action at the edge.
+     Keeps the settings tiles the height of their content instead of stretching
+     two lines of text down a tile sized for a list. */
   .status-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    height: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
     border-left: 3px solid var(--color-border);
-    padding-left: var(--space-3);
+    padding-left: var(--space-4);
   }
 
   .status-card[data-status="active"] {
@@ -49,6 +95,39 @@ const { status, label, detail, href, linkText, dataRole } = Astro.props;
     border-left-color: var(--color-text-dim);
   }
 
+  .status-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+  }
+
+  .status-card__icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* The icon carries the same state colour as the left edge, so the two
+     signals agree rather than each saying something slightly different. */
+  .status-card[data-status="active"] .status-card__icon {
+    background: var(--color-status-bg);
+    color: var(--color-status);
+  }
+
+  .status-card[data-status="expiring"] .status-card__icon {
+    background: var(--color-caution-bg);
+    color: var(--color-caution);
+  }
+
+  .status-card__body {
+    min-width: 0;
+  }
+
   .status-card__label {
     font-weight: 600;
     margin: 0;
@@ -61,7 +140,38 @@ const { status, label, detail, href, linkText, dataRole } = Astro.props;
   }
 
   .status-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
     font-size: var(--text-sm);
-    margin-top: auto;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .status-card__chevron {
+    color: var(--color-text-dim);
+  }
+
+  .status-card__link:hover .status-card__chevron {
+    color: var(--color-action-hover);
+  }
+
+  @media (max-width: 860px) {
+    /* Below this the three columns crush the detail line, so the action drops
+       under the label and the icon keeps its column. */
+    .status-card {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: var(--space-3) var(--space-4);
+    }
+
+    .status-card__link {
+      grid-column: 2;
+    }
+
+    .status-card__link-text {
+      text-decoration: underline;
+    }
   }
 </style>
