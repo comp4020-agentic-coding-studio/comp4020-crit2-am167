@@ -186,6 +186,15 @@ const statusLabel =
   }
 
   @media (max-width: 640px) {
+    /* At 390 the headsign wraps to two lines, which left the route chip
+       floating against the vertical middle of the text and the headsign
+       indented past it. Stack them instead. */
+    .next-trip__route {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: start;
+      gap: var(--space-3);
+    }
+
     .next-trip__footer {
       align-items: stretch;
       flex-direction: column;

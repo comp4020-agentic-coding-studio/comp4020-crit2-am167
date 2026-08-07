@@ -1,8 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BentoTile from "../components/BentoTile.astro";
 import TripListItem from "../components/TripListItem.astro";
 import { SAMPLE_TRIPS } from "../lib/fixtures";
-import { formatDate } from "../lib/format";
+import { formatCents, formatDate } from "../lib/format";
 
 const byDate = new Map<string, typeof SAMPLE_TRIPS>();
 for (const trip of SAMPLE_TRIPS) {
@@ -10,47 +11,88 @@ for (const trip of SAMPLE_TRIPS) {
   list.push(trip);
   byDate.set(trip.date, list);
 }
-const days = Array.from(byDate.entries()).sort(([a], [b]) => (a < b ? 1 : -1));
+const days = Array.from(byDate.entries())
+  .sort(([a], [b]) => (a < b ? 1 : -1))
+  .map(([date, trips]) => ({
+    date,
+    trips,
+    // Fares are dollar amounts in the fixtures; sum in cents so a day of
+    // $3.41 + $2.70 doesn't accumulate float error in the subtotal.
+    totalCents: trips.reduce(
+      (sum, trip) => sum + Math.round(trip.fare * 100),
+      0,
+    ),
+  }));
+
+const totalSpentCents = days.reduce((sum, day) => sum + day.totalCents, 0);
 ---
 
 <BaseLayout title="Trip history">
   <h1>Trip history</h1>
-  <p class="trips-lede">Your recent journeys, grouped by day.</p>
-  {
-    days.map(([date, trips]) => (
-      <section class="trip-day">
-        <h2>{formatDate(date)}</h2>
-        <ul class="trip-list">
-          {trips.map((trip) => (
-            <TripListItem trip={trip} />
-          ))}
-        </ul>
-      </section>
-    ))
-  }
+  <p class="trips-lede">
+    Your recent journeys, grouped by day — {SAMPLE_TRIPS.length} trips,{" "}
+    {formatCents(totalSpentCents)} in total.
+  </p>
+  <div class="page-stack">
+    {
+      days.map((day) => (
+        <BentoTile>
+          <section class="trip-day">
+            <div class="trip-day__head">
+              <h2>{formatDate(day.date)}</h2>
+              <p class="trip-day__total tabular-nums">
+                {day.trips.length} {day.trips.length === 1 ? "trip" : "trips"}
+                <span class="trip-day__dot" aria-hidden="true">·</span>
+                {formatCents(day.totalCents)} spent
+              </p>
+            </div>
+            <ul class="list-stack">
+              {day.trips.map((trip) => (
+                <TripListItem trip={trip} />
+              ))}
+            </ul>
+          </section>
+        </BentoTile>
+      ))
+    }
+  </div>
 </BaseLayout>
 
 <style>
   .trips-lede {
     color: var(--color-text-muted);
-    margin-bottom: var(--space-5);
+    margin-bottom: 0;
   }
 
-  .trip-day {
-    margin-bottom: var(--space-6);
-  }
-
-  .trip-day h2 {
-    font-size: var(--text-lg);
-    margin-bottom: var(--space-3);
-  }
-
-  .trip-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  /* The date and its subtotal share a baseline row, so each tile opens with a
+     statement line ("4 trips · $10.23 spent") rather than a bare date over a
+     gap. */
+  .trip-day__head {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: var(--border-width) solid var(--color-border);
+  }
+
+  .trip-day__head h2 {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+
+  .trip-day__total {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .trip-day__dot {
+    margin: 0 0.35rem;
+    color: var(--color-text-dim);
   }
 </style>

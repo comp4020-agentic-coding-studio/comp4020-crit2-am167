@@ -574,3 +574,66 @@ transit-control view.
 - Verified in Chrome at 1920×1080 and 390×844: no horizontal overflow,
   vehicles move (`getBoundingClientRect` changed across 2s), `pauseAnimations()`
   freezes them (reduced-motion path). `pnpm check` green (190 tests).
+
+## 2026-08-07 --- visual polish pass from crit feedback
+
+Worked a written visual review of the redesign on `worktree-visual-polish`.
+The review's own priority order was card tiers, unified money green, and
+cutting duplicate "Live" pulses; did all fifteen points except the ones it
+said to skip (dark mode, landing page, real map tiles, extra motion).
+
+- **Two card tiers, stated as a rule.** Added `--shadow-tile` next to
+  `--shadow-card` and a comment in `tokens.css` saying hero = gradient +
+  `--shadow-card` + `--color-border-hero`, standard = white + hairline
+  shadow, and there is no third tier. Every page already had exactly one
+  hero tile, so the rule was descriptive rather than a refactor. Verified by
+  reading `boxShadow` off all seven `.bento-tile`s on the dashboard: one
+  `0.07` hero, six `0.05` standard.
+- **Money is green everywhere.** Selected amount chips were
+  `--color-action` (neutral dark) while the submit button was
+  `--color-status`. Both now compute to `rgb(23, 120, 79)` — checked in the
+  browser, not by eye. Balance tile gets a `tone="positive"` 5% status wash,
+  the same `color-mix` pattern the departure rows use for mode tint.
+- **One pulse, not three.** Kept the pulsing dot on the Next Trip hero;
+  departures header and live map are now static copy. Counted animated
+  elements on the dashboard afterwards: 2, the hero pulse plus
+  `LineDiagram`'s "you are here" position dot. Left that one — it signals
+  position, not feed liveness — but it is a second pulsing green dot on the
+  dashboard and worth a decision at crit.
+- **Extracted a shared `.list-row` pattern** into `global.css`. The review
+  said the live-map vehicle list didn't match the dashboard departure rows;
+  they were in fact three near-identical scoped copies (departures, vehicles,
+  trips) that had drifted on list gap. One rule, three consumers, ~90 lines
+  of duplicated CSS gone. Had to rename the BEM `__` parts to kebab-case:
+  stylelint only lints `**/*.css`, so `global.css` follows kebab-case while
+  Astro's unlinted scoped blocks use `__`.
+- **`color-scheme`:** the review read this as a live bug (`tokens.css` light
+  vs `global.css` dark). It wasn't rendering dark — `:root` is 0-1-0 and
+  `html` is 0-0-1, so light already won regardless of order. Deleted the dead
+  `dark` rule anyway and left a comment with the specificity reason;
+  confirmed `getComputedStyle(html).colorScheme === "light"`.
+- **Two places I deliberately did not take the suggestion.** The review
+  offered bus blue for the account avatar; `--color-bus` means "this is a
+  bus" and nothing else, so the avatar uses `--color-action` instead. The
+  auth wash was specified as `--color-surface-hero`, but surface-hero
+  (#f2f7fb) and bg (#f1f4f6) are close enough that the gradient was
+  invisible on screen — mixed in `--color-border-hero`, same hero-surface
+  family, which actually reads.
+- **Also:** Inter loaded as the body face beside Space Grotesk (verified via
+  `document.fonts.check` per weight — the bare `"Space Grotesk"` check fails
+  only because weight 400 isn't requested); wordmark is now a square 512×512
+  icon plus "MyWay+" type instead of a square icon cropped into a 7rem×2.25rem
+  letterbox; active nav is an underline on desktop and a left edge on mobile;
+  trips page grouped into per-day tiles with subtotals; status cards compact
+  horizontal with icons; trip fare badges white so they separate from the
+  raised row behind them.
+- **Three things the review didn't ask for, found while verifying at 390px.**
+  The hero's route chip floated against the vertical middle of a two-line
+  headsign; list rows wrapped at whatever point each one ran out of width, so
+  neighbouring rows had different shapes; and the live-map sidebar did the
+  same at desktop. All three are now uniform — measured row heights rather
+  than eyeballing (departures went from `[88,88,126,88,126,88]` with the chip
+  jumping lines to `[88,88,114,88,114,88]` with the title wrapping in place).
+- `pnpm check` green (95 tests). Verified in real Chrome via `pnpm preview`
+  at both marked viewports; measured `scrollWidth - clientWidth === 0` and
+  zero out-of-bounds elements on all ten built pages at 390px.

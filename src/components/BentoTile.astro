@@ -1,24 +1,31 @@
 ---
 interface Props {
   size?: "hero" | "medium" | "small";
+  /** "positive" tints the tile with the status green used for balance and
+   * top-up, so a money tile reads as money before you've read a word of it.
+   * Reserved for account-value tiles — not a decorative option. */
+  tone?: "neutral" | "positive";
 }
 
-const { size = "medium" } = Astro.props;
+const { size = "medium", tone = "neutral" } = Astro.props;
 ---
 
-<div class:list={["bento-tile", `bento-tile--${size}`]}>
+<div class:list={["bento-tile", `bento-tile--${size}`, `bento-tile--${tone}`]}>
   <slot />
 </div>
 
 <style>
+  /* Standard tier: white, hairline border, hairline shadow. Everything that
+     isn't the page's single hero tile looks exactly like this. */
   .bento-tile {
     background: var(--color-surface);
     border: var(--border-width) solid var(--color-border);
     border-radius: var(--radius-card);
-    box-shadow: none;
+    box-shadow: var(--shadow-tile);
     padding: var(--space-5);
   }
 
+  /* Hero tier: gradient, deeper shadow, tinted border. One per page. */
   .bento-tile--hero {
     border-color: var(--color-border-hero);
     background: linear-gradient(
@@ -27,5 +34,10 @@ const { size = "medium" } = Astro.props;
       var(--color-surface-hero)
     );
     box-shadow: var(--shadow-card);
+  }
+
+  .bento-tile--positive {
+    border-color: color-mix(in srgb, var(--color-status) 22%, var(--color-border));
+    background: color-mix(in srgb, var(--color-status) 5%, var(--color-surface));
   }
 </style>

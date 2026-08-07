@@ -20,9 +20,18 @@ interface Props {
    * app is already showing a signed-in user's balance and trips, so the nav
    * shows the account chip instead of "Log in" / "Sign up". */
   loggedIn?: boolean;
+  /** "auth" paints the soft top wash behind the login/signup card, which
+   * otherwise floats in a flat field of --color-bg. */
+  tone?: "default" | "auth";
 }
 
-const { title, depth = 1, wide = false, loggedIn = true } = Astro.props;
+const {
+  title,
+  depth = 1,
+  wide = false,
+  loggedIn = true,
+  tone = "default",
+} = Astro.props;
 const up = depth === 0 ? "./" : "../";
 
 const navLinks = [
@@ -44,21 +53,22 @@ const navLinks = [
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body>
+  <body class:list={[tone === "auth" && "tone-auth"]}>
     <header class="site-header">
       <div class="site-header__bar">
         <a class="wordmark" href={up} aria-label="MyWay+ home">
           <img
             class="wordmark__logo"
             src={`${up}assets/myway-plus-app-icon.webp`}
-            alt="MyWay+"
-            width="112"
-            height="36"
+            alt=""
+            width="512"
+            height="512"
           />
+          <span class="wordmark__text">MyWay+</span>
         </a>
         <nav aria-label="Primary" class="primary-nav">
           <div id="primary-nav-panel" class="primary-nav__panel">
@@ -172,12 +182,24 @@ const navLinks = [
     gap: var(--space-2);
   }
 
+  /* The source is a 512×512 app icon. It used to be forced into a 7rem × 2.25rem
+     box with object-fit: cover, which cropped a square mark into a letterbox
+     strip that read as neither icon nor wordmark. Now it stays square at its
+     own aspect ratio and the name is set as type beside it. */
   .wordmark__logo {
     display: block;
-    width: 7rem;
-    height: 2.25rem;
-    object-fit: cover;
-    object-position: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+  }
+
+  .wordmark__text {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
   }
 
   .site-header__actions {
@@ -237,9 +259,19 @@ const navLinks = [
     color: var(--color-action-hover);
   }
 
+  /* Every nav link carries a transparent bottom border so marking the current
+     page doesn't reflow the row. */
+  .primary-nav__links a {
+    border-bottom: 2px solid transparent;
+  }
+
+  /* The active page reads as an underline rather than a filled pill: it's the
+     convention in transit apps, it survives being one of six items, and it
+     spends less visual weight than a background fill. */
   .primary-nav__links a.is-current {
-    background: var(--color-surface-raised);
-    color: var(--color-action-hover);
+    border-bottom-color: var(--color-action);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    color: var(--color-text);
     font-weight: 700;
   }
 
@@ -262,6 +294,11 @@ const navLinks = [
     font-weight: 600;
   }
 
+  /* Filled with --color-action, not a mode colour: --color-bus and
+     --color-rail mean "this is a bus" / "this is light rail" and nothing else,
+     so an avatar tinted bus blue would put livery colour on a thing that isn't
+     a vehicle. The neutral chrome colour still reads as a real avatar against
+     the grey initial it replaces. */
   .account-chip__avatar {
     display: inline-flex;
     align-items: center;
@@ -270,10 +307,12 @@ const navLinks = [
     height: 1.75rem;
     flex-shrink: 0;
     border-radius: 50%;
-    background: var(--color-surface-raised);
-    border: var(--border-width) solid var(--color-border);
+    background: var(--color-action);
+    color: var(--color-action-contrast);
     font-family: var(--font-display);
     font-size: var(--text-xs);
+    font-weight: 700;
+    line-height: 1;
   }
 
   @media (min-width: 720px) {
@@ -316,6 +355,21 @@ const navLinks = [
     .primary-nav__links li,
     .primary-nav__auth li {
       flex: 1 1 9rem;
+    }
+
+    /* Stacked full-width links turn a bottom border into what looks like a
+       row divider, so on mobile the current page takes the left-edge accent
+       the departure rows and status cards already use. */
+    .primary-nav__links a {
+      border-bottom-color: transparent;
+      border-left: 3px solid transparent;
+    }
+
+    .primary-nav__links a.is-current {
+      border-radius: var(--radius-sm);
+      border-bottom-color: transparent;
+      border-left-color: var(--color-action);
+      background: var(--color-surface-raised);
     }
 
     .account-chip {

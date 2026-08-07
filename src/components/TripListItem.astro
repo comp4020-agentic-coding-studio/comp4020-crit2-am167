@@ -18,12 +18,12 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
 };
 ---
 
-<li class="trip-item" data-mode={trip.mode}>
-  <div class="trip-item__main">
+<li class="list-row" data-mode={trip.mode}>
+  <div class="list-row-main">
     <RouteChip mode={trip.mode} label={routeLabel} />
     <span class="trip-item__stops">{trip.from} → {trip.to}</span>
   </div>
-  <div class="trip-item__meta">
+  <div class="list-row-meta">
     <span class="trip-item__badge">{fareTypeLabel[trip.fareType]}</span>
     <span class="trip-item__fare tabular-nums">
       {formatCents(Math.round(trip.fare * 100))}
@@ -32,50 +32,17 @@ const fareTypeLabel: Record<Trip["fareType"], string> = {
 </li>
 
 <style>
-  .trip-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    padding: var(--space-3);
-    background: var(--color-surface-raised);
-    border: var(--border-width) solid var(--color-border);
-    border-left: 3px solid var(--color-border);
-    border-radius: var(--radius-sm);
-  }
-
-  .trip-item[data-mode="bus"] {
-    border-left-color: var(--color-bus);
-  }
-
-  .trip-item[data-mode="light-rail"] {
-    border-left-color: var(--color-rail);
-  }
-
-  .trip-item__main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-  }
-
   .trip-item__stops {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }
 
-  .trip-item__meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex-shrink: 0;
-  }
-
+  /* White, not --color-surface-raised: the row behind it is already raised, so
+     a raised badge on a raised row had almost no edge to read. */
   .trip-item__badge {
     font-size: var(--text-xs);
     color: var(--color-text-muted);
-    background: var(--color-surface-raised);
+    background: var(--color-surface);
     border: var(--border-width) solid var(--color-border);
     padding: 0.1rem var(--space-2);
     border-radius: var(--radius-pill);
