@@ -637,3 +637,9 @@ said to skip (dark mode, landing page, real map tiles, extra motion).
 - `pnpm check` green (95 tests). Verified in real Chrome via `pnpm preview`
   at both marked viewports; measured `scrollWidth - clientWidth === 0` and
   zero out-of-bounds elements on all ten built pages at 390px.
+- Follow-up: the wordmark linked to a bare directory (`../`), which only
+  resolves if the site root itself resolves cleanly — it 404'd in use. Pointed
+  it at `${up}dashboard/` instead, an explicit page that always exists.
+  `index.astro` renders the same dashboard, so "home" is unchanged, but the
+  URL can't miss now. Worth noting the redesign spec only checks `nav a[href]`
+  resolve, and the wordmark sits outside `<nav>`, so nothing caught this.

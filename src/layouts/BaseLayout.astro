@@ -60,7 +60,11 @@ const navLinks = [
   <body class:list={[tone === "auth" && "tone-auth"]}>
     <header class="site-header">
       <div class="site-header__bar">
-        <a class="wordmark" href={up} aria-label="MyWay+ home">
+        <a
+          class="wordmark"
+          href={`${up}dashboard/`}
+          aria-label="MyWay+ home"
+        >
           <img
             class="wordmark__logo"
             src={`${up}assets/myway-plus-app-icon.webp`}
