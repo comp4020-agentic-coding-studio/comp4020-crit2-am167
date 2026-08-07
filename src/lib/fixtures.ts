@@ -451,23 +451,26 @@ export const NETWORK_NODES: NetworkNode[] = [
     labelDy: 6,
   },
   {
-    id: "fyshwick",
-    name: "Fyshwick",
-    shortName: "Fyshwick",
+    // On the City→Erindale corridor (south then east into the valley) —
+    // not via Fyshwick, which sits east of the city toward the airport.
+    id: "wanniassa",
+    name: "Wanniassa",
+    shortName: "Wanniassa",
     kind: "stop",
-    x: 650,
-    y: 495,
+    x: 520,
+    y: 620,
     labelAnchor: "start",
     labelDx: 14,
     labelDy: 4,
   },
   {
+    // Northeast of Tuggeranong Interchange in the southern valley.
     id: "erindale",
     name: "Erindale Centre",
     shortName: "Erindale",
     kind: "interchange",
-    x: 720,
-    y: 625,
+    x: 580,
+    y: 655,
     labelAnchor: "start",
     labelDx: 14,
     labelDy: 6,
@@ -534,19 +537,23 @@ export const NETWORK_LINES: NetworkLine[] = [
     mode: "bus",
     route: "Rapid 2",
     shortLabel: "R2",
-    nodeIds: ["city", "fyshwick", "erindale"],
-    pathD: "M 500,390 Q 610,440 650,495 L 720,625",
-    labelAt: { x: 710, y: 455 },
+    // South from City toward the Woden corridor, then east to Erindale —
+    // matching the real southern-valley approach rather than an eastern
+    // hop through Fyshwick.
+    nodeIds: ["city", "wanniassa", "erindale"],
+    pathD: "M 500,390 Q 490,520 520,620 L 580,655",
+    labelAt: { x: 565, y: 545 },
   },
 ];
 
-/** Cosmetic animation pacing — roughly proportional to schematic length. */
+/** Cosmetic animation pacing — roughly proportional to schematic length.
+ * Kept deliberately slow so the diagram reads as a live board, not a race. */
 export const NETWORK_LINE_DURATIONS_SECONDS: Record<string, number> = {
-  "line-light-rail": 22,
-  "line-rapid-3": 12,
-  "line-rapid-4": 14,
-  "line-rapid-7": 18,
-  "line-rapid-2": 16,
+  "line-light-rail": 48,
+  "line-rapid-3": 28,
+  "line-rapid-4": 32,
+  "line-rapid-7": 40,
+  "line-rapid-2": 34,
 };
 
 export interface NetworkVehicleMeta {
@@ -597,7 +604,7 @@ export const NETWORK_VEHICLE_META: NetworkVehicleMeta[] = [
     departureId: "d6",
     lineId: "line-rapid-2",
     progress: 0.22,
-    nextStop: "Fyshwick",
+    nextStop: "Wanniassa",
   },
 ];
 

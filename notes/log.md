@@ -575,6 +575,14 @@ transit-control view.
   vehicles move (`getBoundingClientRect` changed across 2s), `pauseAnimations()`
   freezes them (reduced-motion path). `pnpm check` green (190 tests).
 
+## 2026-08-07 --- live map pacing + Rapid 2 corridor
+
+Vehicles felt rushed, and Rapid 2's City→Fyshwick→Erindale spoke was
+geographically wrong (Fyshwick is east toward the airport; Erindale sits in
+the southern valley near Tuggeranong). Slowed SMIL durations ~2×, dropped
+Fyshwick, moved Erindale NE of Tuggeranong, and rerouted R2 City→Wanniassa→
+Erindale along a south-then-east corridor.
+
 ## 2026-08-07 --- visual polish pass from crit feedback
 
 Worked a written visual review of the redesign on `worktree-visual-polish`.
