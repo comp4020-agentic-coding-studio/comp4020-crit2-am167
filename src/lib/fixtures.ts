@@ -312,6 +312,9 @@ export const DEPARTURES: Departure[] = [
 export interface NetworkNode {
   id: string;
   name: string;
+  /** Compact label used on the diagram — full `name` stays in the side panel. */
+  shortName: string;
+  kind: "interchange" | "stop";
   /** Schematic diagram coordinates in a 0–1000 × 0–700 viewBox — loosely
    * follow real compass relationships (Gungahlin north, Belconnen
    * north-west, Woden/Tuggeranong south) but aren't real GPS coordinates.
@@ -319,55 +322,287 @@ export interface NetworkNode {
    * `LIGHT_RAIL_LINE`'s stop list. */
   x: number;
   y: number;
+  /** SVG text-anchor for the stop label. */
+  labelAnchor?: "start" | "middle" | "end";
+  labelDx?: number;
+  labelDy?: number;
 }
 
-// Interchange names are real (they're the same ones used above in
-// SAMPLE_TRIPS/DEPARTURES); the schematic layout is invented for this
-// diagram, not a real map.
+// Interchange / stop names are real Transport Canberra places; coordinates
+// and intermediate spacing are invented for a readable schematic, not a
+// real map.
 export const NETWORK_NODES: NetworkNode[] = [
-  { id: "gungahlin", name: "Gungahlin Place", x: 500, y: 90 },
-  { id: "dickson", name: "Dickson Interchange", x: 500, y: 230 },
-  { id: "city", name: "City Interchange", x: 500, y: 380 },
-  { id: "belconnen", name: "Belconnen Interchange", x: 200, y: 190 },
-  { id: "woden", name: "Woden Interchange", x: 430, y: 580 },
-  { id: "tuggeranong", name: "Tuggeranong Interchange", x: 380, y: 660 },
-  { id: "erindale", name: "Erindale Centre", x: 620, y: 610 },
+  {
+    id: "gungahlin",
+    name: "Gungahlin Place",
+    shortName: "Gungahlin",
+    kind: "interchange",
+    x: 520,
+    y: 72,
+    labelDy: -18,
+  },
+  {
+    id: "well-station",
+    name: "Well Station Drive",
+    shortName: "Well Station",
+    kind: "stop",
+    x: 520,
+    y: 155,
+    labelAnchor: "start",
+    labelDx: 14,
+    labelDy: 4,
+  },
+  {
+    id: "dickson",
+    name: "Dickson Interchange",
+    shortName: "Dickson",
+    kind: "interchange",
+    x: 520,
+    y: 230,
+    labelAnchor: "start",
+    labelDx: 16,
+    labelDy: 4,
+  },
+  {
+    id: "macarthur",
+    name: "Macarthur Avenue",
+    shortName: "Macarthur",
+    kind: "stop",
+    x: 520,
+    y: 300,
+    labelAnchor: "start",
+    labelDx: 14,
+    labelDy: 4,
+  },
+  {
+    id: "city",
+    name: "City Interchange",
+    shortName: "City",
+    kind: "interchange",
+    x: 500,
+    y: 390,
+    labelAnchor: "start",
+    labelDx: 22,
+    labelDy: 5,
+  },
+  {
+    id: "bruce",
+    name: "Bruce",
+    shortName: "Bruce",
+    kind: "stop",
+    x: 328,
+    y: 290,
+    labelAnchor: "end",
+    labelDx: -12,
+    labelDy: -8,
+  },
+  {
+    id: "belconnen",
+    name: "Belconnen Interchange",
+    shortName: "Belconnen",
+    kind: "interchange",
+    x: 170,
+    y: 175,
+    labelAnchor: "middle",
+    labelDy: -18,
+  },
+  {
+    id: "phillip",
+    name: "Phillip",
+    shortName: "Phillip",
+    kind: "stop",
+    x: 455,
+    y: 500,
+    labelAnchor: "end",
+    labelDx: -14,
+    labelDy: 4,
+  },
+  {
+    id: "woden",
+    name: "Woden Interchange",
+    shortName: "Woden",
+    kind: "interchange",
+    x: 420,
+    y: 575,
+    labelAnchor: "end",
+    labelDx: -16,
+    labelDy: 4,
+  },
+  {
+    id: "mawson",
+    name: "Mawson",
+    shortName: "Mawson",
+    kind: "stop",
+    x: 365,
+    y: 630,
+    labelAnchor: "end",
+    labelDx: -14,
+    labelDy: 4,
+  },
+  {
+    id: "tuggeranong",
+    name: "Tuggeranong Interchange",
+    shortName: "Tuggeranong",
+    kind: "interchange",
+    x: 330,
+    y: 680,
+    labelAnchor: "end",
+    labelDx: -16,
+    labelDy: 6,
+  },
+  {
+    id: "fyshwick",
+    name: "Fyshwick",
+    shortName: "Fyshwick",
+    kind: "stop",
+    x: 650,
+    y: 495,
+    labelAnchor: "start",
+    labelDx: 14,
+    labelDy: 4,
+  },
+  {
+    id: "erindale",
+    name: "Erindale Centre",
+    shortName: "Erindale",
+    kind: "interchange",
+    x: 720,
+    y: 625,
+    labelAnchor: "start",
+    labelDx: 14,
+    labelDy: 6,
+  },
 ];
 
 export interface NetworkLine {
   id: string;
   mode: "bus" | "light-rail";
   route: string;
+  /** Compact route badge drawn on the diagram (e.g. R3, LR). */
+  shortLabel: string;
   /** Ordered `NetworkNode` ids this line's path passes through. */
   nodeIds: string[];
+  /** Hand-tuned SVG path — curved spokes, not straight hub lines. */
+  pathD: string;
+  /** Placement for the on-diagram route chip. */
+  labelAt: { x: number; y: number };
 }
 
-// Same routes as `DEPARTURES` above, laid out as a simple hub-and-spoke
-// schematic centred on City Interchange — not the real route geometry.
+// Same routes as `DEPARTURES` above, laid out as a hub-and-spoke schematic
+// centred on City Interchange — not the real route geometry.
 export const NETWORK_LINES: NetworkLine[] = [
   {
     id: "line-light-rail",
     mode: "light-rail",
     route: "Light Rail",
-    nodeIds: ["gungahlin", "dickson", "city"],
+    shortLabel: "LR",
+    nodeIds: ["gungahlin", "well-station", "dickson", "macarthur", "city"],
+    pathD: "M 520,72 L 520,155 L 520,230 L 520,300 L 500,390",
+    labelAt: { x: 455, y: 145 },
   },
-  { id: "line-rapid-3", mode: "bus", route: "Rapid 3", nodeIds: ["city", "woden"] },
+  {
+    id: "line-rapid-3",
+    mode: "bus",
+    route: "Rapid 3",
+    shortLabel: "R3",
+    nodeIds: ["city", "phillip", "woden"],
+    pathD: "M 500,390 Q 470,480 420,575",
+    labelAt: { x: 515, y: 505 },
+  },
   {
     id: "line-rapid-4",
     mode: "bus",
     route: "Rapid 4",
-    nodeIds: ["city", "belconnen"],
+    shortLabel: "R4",
+    nodeIds: ["city", "bruce", "belconnen"],
+    pathD: "M 500,390 Q 340,310 170,175",
+    labelAt: { x: 270, y: 230 },
   },
   {
     id: "line-rapid-7",
     mode: "bus",
     route: "Rapid 7",
-    nodeIds: ["city", "tuggeranong"],
+    shortLabel: "R7",
+    // Drawn west of Rapid 3 so the shared southern corridor still reads as
+    // two services, then continues past Woden to Tuggeranong.
+    nodeIds: ["city", "woden", "mawson", "tuggeranong"],
+    pathD: "M 500,390 Q 420,495 400,575 L 365,630 L 330,680",
+    labelAt: { x: 300, y: 555 },
   },
   {
     id: "line-rapid-2",
     mode: "bus",
     route: "Rapid 2",
-    nodeIds: ["city", "erindale"],
+    shortLabel: "R2",
+    nodeIds: ["city", "fyshwick", "erindale"],
+    pathD: "M 500,390 Q 610,440 650,495 L 720,625",
+    labelAt: { x: 710, y: 455 },
   },
 ];
+
+/** Cosmetic animation pacing — roughly proportional to schematic length. */
+export const NETWORK_LINE_DURATIONS_SECONDS: Record<string, number> = {
+  "line-light-rail": 22,
+  "line-rapid-3": 12,
+  "line-rapid-4": 14,
+  "line-rapid-7": 18,
+  "line-rapid-2": 16,
+};
+
+export interface NetworkVehicleMeta {
+  departureId: string;
+  lineId: string;
+  /** 0–1 offset along the path so vehicles don't all start together. */
+  progress: number;
+  nextStop: string;
+  /** When true, animate toward the first node instead of the last. */
+  reverse?: boolean;
+}
+
+// Presentation extras for the live map, keyed to the shared DEPARTURES
+// fixture so the map and departures board stay in sync.
+export const NETWORK_VEHICLE_META: NetworkVehicleMeta[] = [
+  {
+    departureId: "d1",
+    lineId: "line-light-rail",
+    progress: 0.72,
+    nextStop: "Macarthur Avenue",
+  },
+  {
+    departureId: "d2",
+    lineId: "line-rapid-3",
+    progress: 0.35,
+    nextStop: "Phillip",
+  },
+  {
+    departureId: "d3",
+    lineId: "line-rapid-7",
+    progress: 0.55,
+    nextStop: "Woden Interchange",
+  },
+  {
+    departureId: "d4",
+    lineId: "line-light-rail",
+    progress: 0.28,
+    nextStop: "Dickson Interchange",
+    reverse: true,
+  },
+  {
+    departureId: "d5",
+    lineId: "line-rapid-4",
+    progress: 0.48,
+    nextStop: "Bruce",
+  },
+  {
+    departureId: "d6",
+    lineId: "line-rapid-2",
+    progress: 0.22,
+    nextStop: "Fyshwick",
+  },
+];
+
+// Simulated feed chrome for the live-map page — invented, not a real API.
+export const LIVE_FEED = {
+  updatedLabel: "Demo feed · updated just now",
+  statusLabel: "All routes reporting",
+} as const;

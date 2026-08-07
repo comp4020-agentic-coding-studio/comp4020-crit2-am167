@@ -1,118 +1,280 @@
 ---
 import BentoTile from "./BentoTile.astro";
 import RouteChip from "./RouteChip.astro";
-import { DEPARTURES, NETWORK_LINES, NETWORK_NODES } from "../lib/fixtures";
-import type { NetworkLine, NetworkNode } from "../lib/fixtures";
+import {
+  DEPARTURES,
+  LIVE_FEED,
+  NETWORK_LINES,
+  NETWORK_LINE_DURATIONS_SECONDS,
+  NETWORK_NODES,
+  NETWORK_VEHICLE_META,
+} from "../lib/fixtures";
+import type { Departure, NetworkLine } from "../lib/fixtures";
 
-const nodesById: Record<string, NetworkNode> = Object.fromEntries(
-  NETWORK_NODES.map((node): [string, NetworkNode] => [node.id, node]),
+const departuresById: Record<string, Departure> = Object.fromEntries(
+  DEPARTURES.map((departure): [string, Departure] => [departure.id, departure]),
 );
 
-function pathFor(line: NetworkLine) {
-  const points = line.nodeIds.map((id) => nodesById[id]);
-  return `M ${points.map((p) => `${p.x},${p.y}`).join(" L ")}`;
+const linesById: Record<string, NetworkLine> = Object.fromEntries(
+  NETWORK_LINES.map((line): [string, NetworkLine] => [line.id, line]),
+);
+
+const vehicles = NETWORK_VEHICLE_META.flatMap((meta) => {
+  const departure = departuresById[meta.departureId];
+  const line = linesById[meta.lineId];
+  if (!departure || !line) return [];
+
+  const durationSeconds =
+    NETWORK_LINE_DURATIONS_SECONDS[meta.lineId] ?? 12;
+  const reverse = meta.reverse ?? false;
+
+  return [
+    {
+      id: departure.id,
+      mode: departure.mode,
+      headsign: departure.headsign,
+      route: departure.route,
+      shortLabel: line.shortLabel,
+      lineId: meta.lineId,
+      reverse,
+      progress: meta.progress,
+      durationSeconds,
+      nextStop: meta.nextStop,
+      etaMinutes: departure.etaMinutes,
+      status: departure.status,
+      delayMinutes: departure.delayMinutes,
+      // Negative begin offsets the SMIL cycle so markers start mid-route.
+      beginSeconds: -(meta.progress * durationSeconds),
+    },
+  ];
+});
+
+const delayedCount = vehicles.filter((v) => v.status === "delayed").length;
+const onTimeCount = vehicles.length - delayedCount;
+
+function statusLabel(vehicle: (typeof vehicles)[number]) {
+  return vehicle.status === "on-time"
+    ? "On time"
+    : `Delayed ${vehicle.delayMinutes} min`;
 }
 
-// Cosmetic animation pacing only — not domain data, so it lives here rather
-// than in fixtures.ts. Roughly proportional to each spoke's schematic length.
-const LINE_DURATIONS_SECONDS: Record<string, number> = {
-  "line-light-rail": 18,
-  "line-rapid-3": 10,
-  "line-rapid-4": 9,
-  "line-rapid-7": 13,
-  "line-rapid-2": 11,
-};
-
-// Maps each DEPARTURES route to the network line it runs on. Light Rail is
-// the only line with vehicles going both directions in the fixture data.
-const ROUTE_LINES: Record<string, { lineId: string; reverseHeadsigns?: string[] }> = {
-  "Light Rail": { lineId: "line-light-rail", reverseHeadsigns: ["Gungahlin Place"] },
-  "Rapid 3": { lineId: "line-rapid-3" },
-  "Rapid 4": { lineId: "line-rapid-4" },
-  "Rapid 7": { lineId: "line-rapid-7" },
-  "Rapid 2": { lineId: "line-rapid-2" },
-};
-
-const vehicles = DEPARTURES.map((departure) => {
-  const lineInfo = ROUTE_LINES[departure.route];
-  return {
-    id: departure.id,
-    mode: departure.mode,
-    headsign: departure.headsign,
-    route: departure.route,
-    lineId: lineInfo.lineId,
-    reverse: lineInfo.reverseHeadsigns?.includes(departure.headsign) ?? false,
-    durationSeconds: LINE_DURATIONS_SECONDS[lineInfo.lineId] ?? 12,
-  };
-});
+function etaLabel(minutes: number) {
+  return minutes === 0 ? "Now" : `${minutes} min`;
+}
 ---
 
 <div class="live-map">
-  <BentoTile>
-    <p class="live-map__caption">
-      A simulated view of the network right now — schematic, not to scale,
-      built from demo data.
-    </p>
-    <svg
-      class="live-map__diagram"
-      viewBox="0 0 1000 700"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {
-        NETWORK_LINES.map((line) => (
-          <path
-            id={line.id}
-            d={pathFor(line)}
-            data-mode={line.mode}
-            class="live-map__route"
-          />
-        ))
-      }
-      {
-        NETWORK_NODES.map((node) => (
-          <g class="live-map__node">
-            <circle
-              cx={node.x}
-              cy={node.y}
-              r={node.id === "city" ? 9 : 6}
-            />
-            <text x={node.x} y={node.y - 16}>
-              {node.name}
-            </text>
-          </g>
-        ))
-      }
-      {
-        vehicles.map((vehicle) => (
-          <g class="live-map__vehicle" data-mode={vehicle.mode}>
-            <circle r="7" />
-            <animateMotion
-              dur={`${vehicle.durationSeconds}s`}
-              repeatCount="indefinite"
-              calcMode="linear"
-              keyPoints={vehicle.reverse ? "1;0;1" : "0;1;0"}
-              keyTimes="0;0.5;1"
+  <BentoTile size="hero">
+    <div class="live-map__header">
+      <div>
+        <p class="live-map__eyebrow">Network overview</p>
+        <p class="live-map__caption">
+          Simulated schematic of active Rapid and Light Rail services —
+          not to scale, built from demo data.
+        </p>
+      </div>
+      <div class="live-map__feed" aria-label="Feed status">
+        <span class="live-map__live-badge">
+          <span class="live-map__live-dot" aria-hidden="true"></span>
+          Live
+        </span>
+        <span>{LIVE_FEED.updatedLabel}</span>
+      </div>
+    </div>
+
+    <div class="live-map__canvas">
+      <svg
+        class="live-map__diagram"
+        viewBox="0 0 1000 700"
+        role="img"
+        aria-label="Schematic map of six simulated vehicles moving across Canberra Rapid and Light Rail routes"
+      >
+        <title>
+          Simulated Canberra transit network with Light Rail and Rapid bus
+          routes
+        </title>
+
+        <!-- Soft district washes — atmosphere only, not geography. -->
+        <g class="live-map__wash" aria-hidden="true">
+          <ellipse cx="520" cy="140" rx="90" ry="110" />
+          <ellipse cx="200" cy="200" rx="110" ry="80" />
+          <ellipse cx="500" cy="390" rx="120" ry="70" />
+          <ellipse cx="400" cy="620" rx="140" ry="70" />
+          <ellipse cx="680" cy="560" rx="100" ry="80" />
+        </g>
+
+        <g class="live-map__compass" aria-hidden="true">
+          <circle cx="60" cy="60" r="22" />
+          <path d="M 60,42 L 66,58 L 60,54 L 54,58 Z" />
+          <text x="60" y="78" text-anchor="middle">N</text>
+        </g>
+
+        {
+          NETWORK_LINES.map((line) => (
+            <g class="live-map__route-group" data-mode={line.mode}>
+              <path
+                class="live-map__route-glow"
+                d={line.pathD}
+                data-mode={line.mode}
+              />
+              <path
+                id={line.id}
+                class="live-map__route"
+                d={line.pathD}
+                data-mode={line.mode}
+              />
+              <g
+                class="live-map__route-badge"
+                transform={`translate(${line.labelAt.x}, ${line.labelAt.y})`}
+              >
+                <rect
+                  x="-20"
+                  y="-12"
+                  width="40"
+                  height="24"
+                  rx="12"
+                  data-mode={line.mode}
+                />
+                <text y="4" text-anchor="middle">
+                  {line.shortLabel}
+                </text>
+              </g>
+            </g>
+          ))
+        }
+
+        {
+          NETWORK_NODES.map((node) => (
+            <g
+              class:list={[
+                "live-map__node",
+                node.kind === "interchange" && "live-map__node--hub",
+                node.id === "city" && "live-map__node--city",
+              ]}
             >
-              <mpath href={`#${vehicle.lineId}`} />
-            </animateMotion>
-          </g>
-        ))
-      }
-    </svg>
+              <circle
+                cx={node.x}
+                cy={node.y}
+                r={
+                  node.id === "city" ? 11 : node.kind === "interchange" ? 8 : 4
+                }
+              />
+              {node.kind === "interchange" && (
+                <circle
+                  class="live-map__node-ring"
+                  cx={node.x}
+                  cy={node.y}
+                  r={node.id === "city" ? 16 : 12}
+                />
+              )}
+              <text
+                class:list={[
+                  "live-map__label",
+                  node.kind === "stop" && "live-map__label--stop",
+                ]}
+                x={node.x + (node.labelDx ?? 0)}
+                y={node.y + (node.labelDy ?? -16)}
+                text-anchor={node.labelAnchor ?? "middle"}
+              >
+                {node.shortName}
+              </text>
+            </g>
+          ))
+        }
+
+        {
+          vehicles.map((vehicle) => (
+            <g
+              class="live-map__vehicle"
+              data-mode={vehicle.mode}
+              data-status={vehicle.status}
+            >
+              {vehicle.status === "delayed" && (
+                <circle class="live-map__vehicle-halo" r="14" />
+              )}
+              <circle class="live-map__vehicle-dot" r="8" />
+              <circle class="live-map__vehicle-core" r="3.5" />
+              <animateMotion
+                dur={`${vehicle.durationSeconds}s`}
+                begin={`${vehicle.beginSeconds}s`}
+                repeatCount="indefinite"
+                calcMode="linear"
+                keyPoints={vehicle.reverse ? "1;0;1" : "0;1;0"}
+                keyTimes="0;0.5;1"
+              >
+                <mpath href={`#${vehicle.lineId}`} />
+              </animateMotion>
+            </g>
+          ))
+        }
+      </svg>
+
+      <ul class="live-map__legend" aria-label="Map legend">
+        <li>
+          <span class="live-map__swatch" data-mode="light-rail"></span>
+          Light rail
+        </li>
+        <li>
+          <span class="live-map__swatch" data-mode="bus"></span>
+          Rapid bus
+        </li>
+        <li>
+          <span class="live-map__swatch live-map__swatch--delayed"></span>
+          Delayed
+        </li>
+        <li>
+          <span class="live-map__swatch live-map__swatch--hub"></span>
+          Interchange
+        </li>
+      </ul>
+    </div>
   </BentoTile>
 
   <BentoTile>
-    <h2>Vehicles in transit</h2>
+    <div class="live-map__panel-head">
+      <div>
+        <h2>Vehicles in transit</h2>
+        <p class="live-map__panel-meta">
+          {vehicles.length} active · {onTimeCount} on time
+          {delayedCount > 0 ? ` · ${delayedCount} delayed` : ""}
+        </p>
+      </div>
+      <p class="live-map__panel-status">{LIVE_FEED.statusLabel}</p>
+    </div>
+
     <ul class="live-map__vehicle-list">
       {
         vehicles.map((vehicle) => (
-          <li>
-            <RouteChip
-              mode={vehicle.mode}
-              label={vehicle.mode === "bus" ? vehicle.route : "Light rail"}
-            />
-            <span>En route to {vehicle.headsign}</span>
+          <li class="live-map__vehicle-card" data-mode={vehicle.mode}>
+            <div class="live-map__vehicle-main">
+              <RouteChip
+                mode={vehicle.mode}
+                label={vehicle.mode === "bus" ? vehicle.route : "Light rail"}
+              />
+              <div class="live-map__vehicle-copy">
+                <span class="live-map__vehicle-headsign">
+                  {vehicle.headsign}
+                </span>
+                <span class="live-map__vehicle-next">
+                  Next stop · {vehicle.nextStop}
+                </span>
+              </div>
+            </div>
+            <div class="live-map__vehicle-meta">
+              <span
+                class="live-map__vehicle-status"
+                data-status={vehicle.status}
+              >
+                <span
+                  class="live-map__vehicle-status-dot"
+                  aria-hidden="true"
+                ></span>
+                {statusLabel(vehicle)}
+              </span>
+              <span class="live-map__vehicle-eta tabular-nums">
+                {etaLabel(vehicle.etaMinutes)}
+              </span>
+            </div>
           </li>
         ))
       }
@@ -135,82 +297,441 @@ const vehicles = DEPARTURES.map((departure) => {
     align-items: start;
   }
 
+  .live-map__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+  }
+
+  .live-map__eyebrow {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
   .live-map__caption {
-    margin: 0 0 var(--space-4);
+    margin: 0;
+    max-width: 40rem;
     color: var(--color-text-muted);
     font-size: var(--text-sm);
   }
 
+  .live-map__feed {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .live-map__live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-status-bg);
+    color: var(--color-status);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .live-map__live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-status);
+    box-shadow: 0 0 0 3px var(--color-status-bg);
+    animation: live-map-pulse 2s ease-in-out infinite;
+  }
+
+  .live-map__canvas {
+    position: relative;
+    border: var(--border-width) solid var(--color-border-hero);
+    border-radius: var(--radius-sm);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 70%), rgb(232 238 242 / 55%)),
+      radial-gradient(
+        circle at 50% 40%,
+        rgb(31 95 196 / 6%),
+        transparent 55%
+      );
+    overflow: hidden;
+  }
+
   .live-map__diagram {
+    display: block;
     width: 100%;
     height: auto;
   }
 
-  .live-map__route {
-    fill: none;
-    stroke-width: 4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    opacity: 0.5;
+  .live-map__wash ellipse {
+    fill: rgb(23 48 63 / 3.5%);
   }
 
+  .live-map__compass circle {
+    fill: var(--color-surface);
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+  }
+
+  .live-map__compass path {
+    fill: var(--color-text);
+  }
+
+  .live-map__compass text {
+    fill: var(--color-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .live-map__route-glow {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.12;
+  }
+
+  .live-map__route-glow[data-mode="bus"],
   .live-map__route[data-mode="bus"] {
     stroke: var(--color-bus);
   }
 
+  .live-map__route-glow[data-mode="light-rail"],
   .live-map__route[data-mode="light-rail"] {
     stroke: var(--color-rail);
   }
 
+  .live-map__route {
+    fill: none;
+    stroke-width: 5.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+  }
+
+  .live-map__route[data-mode="light-rail"] {
+    stroke-width: 7;
+  }
+
+  .live-map__route-badge rect[data-mode="bus"] {
+    fill: var(--color-bus);
+  }
+
+  .live-map__route-badge rect[data-mode="light-rail"] {
+    fill: var(--color-rail);
+  }
+
+  .live-map__route-badge text {
+    fill: var(--color-action-contrast);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
   .live-map__node circle {
-    fill: var(--color-bg);
+    fill: var(--color-surface);
     stroke: var(--color-text-dim);
     stroke-width: 2;
   }
 
-  .live-map__node text {
+  .live-map__node--hub circle:first-of-type {
+    stroke: var(--color-text);
+    stroke-width: 2.5;
+  }
+
+  .live-map__node--city circle:first-of-type {
+    fill: var(--color-action);
+    stroke: var(--color-action);
+  }
+
+  .live-map__node-ring {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+    opacity: 0.9;
+  }
+
+  .live-map__node--city .live-map__node-ring {
+    stroke: var(--color-action);
+    opacity: 0.35;
+  }
+
+  .live-map__label {
+    fill: var(--color-text);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-display);
+  }
+
+  .live-map__label--stop {
     fill: var(--color-text-muted);
-    font-size: 16px;
-    text-anchor: middle;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-sans);
   }
 
-  .live-map__vehicle circle {
-    stroke: var(--color-bg);
-    stroke-width: 2;
+  .live-map__vehicle-halo {
+    fill: var(--color-caution-bg);
+    stroke: var(--color-caution);
+    stroke-width: 1.5;
+    opacity: 0.9;
   }
 
-  .live-map__vehicle[data-mode="bus"] circle {
+  .live-map__vehicle-dot {
+    stroke: var(--color-surface);
+    stroke-width: 2.5;
+  }
+
+  .live-map__vehicle[data-mode="bus"] .live-map__vehicle-dot {
     fill: var(--color-bus);
   }
 
-  .live-map__vehicle[data-mode="light-rail"] circle {
+  .live-map__vehicle[data-mode="light-rail"] .live-map__vehicle-dot {
     fill: var(--color-rail);
+  }
+
+  .live-map__vehicle-core {
+    fill: var(--color-surface);
+  }
+
+  .live-map__vehicle[data-status="delayed"] .live-map__vehicle-dot {
+    stroke: var(--color-caution);
+  }
+
+  .live-map__legend {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    border-top: var(--border-width) solid var(--color-border);
+    background: rgb(255 255 255 / 65%);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .live-map__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .live-map__swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-text-dim);
+  }
+
+  .live-map__swatch[data-mode="bus"] {
+    background: var(--color-bus);
+  }
+
+  .live-map__swatch[data-mode="light-rail"] {
+    background: var(--color-rail);
+  }
+
+  .live-map__swatch--delayed {
+    background: var(--color-caution);
+    box-shadow: 0 0 0 3px var(--color-caution-bg);
+  }
+
+  .live-map__swatch--hub {
+    background: var(--color-surface);
+    border: 2px solid var(--color-text);
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+
+  .live-map__panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .live-map__panel-head h2 {
+    margin: 0;
+    font-size: var(--text-xl);
+  }
+
+  .live-map__panel-meta {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .live-map__panel-status {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-status);
   }
 
   .live-map__vehicle-list {
     list-style: none;
-    margin: var(--space-3) 0 0;
+    margin: var(--space-4) 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
   }
 
-  .live-map__vehicle-list li {
+  .live-map__vehicle-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-3);
     flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-raised);
+    border: var(--border-width) solid var(--color-border);
+    border-left: 3px solid var(--color-border);
+    border-radius: var(--radius-sm);
   }
 
-  .live-map__vehicle-list span {
+  .live-map__vehicle-card[data-mode="bus"] {
+    border-left-color: var(--color-bus);
+    background: color-mix(
+      in srgb,
+      var(--color-bus) 5%,
+      var(--color-surface-raised)
+    );
+  }
+
+  .live-map__vehicle-card[data-mode="light-rail"] {
+    border-left-color: var(--color-rail);
+    background: color-mix(
+      in srgb,
+      var(--color-rail) 5%,
+      var(--color-surface-raised)
+    );
+  }
+
+  .live-map__vehicle-main {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .live-map__vehicle-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .live-map__vehicle-headsign {
+    font-weight: 600;
+  }
+
+  .live-map__vehicle-next {
+    font-size: var(--text-xs);
     color: var(--color-text-muted);
-    font-size: var(--text-sm);
+  }
+
+  .live-map__vehicle-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-shrink: 0;
+  }
+
+  .live-map__vehicle-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .live-map__vehicle-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-dim);
+  }
+
+  .live-map__vehicle-status[data-status="on-time"] {
+    color: var(--color-status);
+  }
+
+  .live-map__vehicle-status[data-status="on-time"]
+    .live-map__vehicle-status-dot {
+    background: var(--color-status);
+  }
+
+  .live-map__vehicle-status[data-status="delayed"] {
+    color: var(--color-caution);
+  }
+
+  .live-map__vehicle-status[data-status="delayed"]
+    .live-map__vehicle-status-dot {
+    background: var(--color-caution);
+  }
+
+  .live-map__vehicle-eta {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    min-width: 3.5rem;
+    text-align: right;
+  }
+
+  @keyframes live-map-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px var(--color-status-bg);
+    }
+    50% {
+      box-shadow: 0 0 0 6px var(--color-status-bg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-map__live-dot {
+      animation: none;
+    }
   }
 
   @media (max-width: 1023px) {
     .live-map {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .live-map__label--stop {
+      display: none;
+    }
+
+    .live-map__label {
+      font-size: 18px;
+    }
+
+    .live-map__compass {
+      display: none;
+    }
+
+    .live-map__legend {
+      gap: var(--space-2) var(--space-3);
+    }
+
+    .live-map__vehicle-eta {
+      min-width: 3rem;
     }
   }
 </style>

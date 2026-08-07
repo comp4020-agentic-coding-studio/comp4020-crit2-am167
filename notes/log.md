@@ -554,3 +554,23 @@ Replaced the placeholder `M` wordmark with the official MyWay+ app mark from
 Transport Canberra and City Services' Google Play listing, stored locally as
 `public/assets/myway-plus-app-icon.webp`. Added a direct footer link to the
 official MyWay+ account portal.
+
+## 2026-08-07 --- polish the simulated live map
+
+The live map still read as a thin hub-and-spoke sketch: straight spokes,
+identical vehicle dots, and a side list that only said "En route to …". Kept
+it dependency-free and schematic (no Leaflet / tiles — same supply-chain and
+"abstract diagram" stance as before), but made the *fake* feed feel like a
+transit-control view.
+
+- Extended `fixtures.ts` network model: intermediate stops, short labels,
+  curved `pathD`s, route badges, staggered vehicle `progress` / next-stop
+  metadata keyed to the shared `DEPARTURES` fixture, plus `LIVE_FEED` chrome.
+- Rebuilt `LiveMap.astro`: district washes, compass, route glow + badges,
+  hub/stop hierarchy, delayed vehicle halos, SMIL begin-offsets so markers
+  start mid-route, legend, and a departures-style status panel (ETA + on-time
+  / delayed). Mobile hides intermediate stop labels and the compass; SVG stays
+  `role="img"` with the list as the accessible detail.
+- Verified in Chrome at 1920×1080 and 390×844: no horizontal overflow,
+  vehicles move (`getBoundingClientRect` changed across 2s), `pauseAnimations()`
+  freezes them (reduced-motion path). `pnpm check` green (190 tests).
