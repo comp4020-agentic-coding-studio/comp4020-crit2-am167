@@ -1,0 +1,45 @@
+---
+interface Props {
+  dashboardHref: string;
+  signupHref: string;
+}
+
+const { dashboardHref, signupHref } = Astro.props;
+---
+
+<section class="auth-card">
+  <h1>MyWay+</h1>
+  <p class="auth-card-lede">
+    Log in to manage your balance, trips, and concession.
+  </p>
+  <form id="login-form" data-dashboard-href={dashboardHref}>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" type="text" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        autocomplete="current-password"
+      />
+    </div>
+    <button type="submit" class="btn primary full-width">Log in</button>
+  </form>
+  <p class="auth-card-alt">
+    New to MyWay+? <a href={signupHref}>Create an account</a>
+  </p>
+</section>
+
+<script>
+  import { demoState } from "../lib/demo-state";
+
+  const form = document.querySelector<HTMLFormElement>("#login-form");
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    demoState.login();
+    window.location.href = form.dataset.dashboardHref ?? "./dashboard/";
+  });
+</script>
