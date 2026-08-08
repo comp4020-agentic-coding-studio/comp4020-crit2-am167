@@ -6,7 +6,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <h1>We couldn't find that page</h1>
   <p>
     The page you're looking for doesn't exist in this redesign concept. Try
-    the <a href="./">home page</a> or the <a href="./dashboard/">dashboard</a
-    >.
+    the <a href="./" data-fallback-link>home page</a> or the
+    <a href="./dashboard/" data-fallback-link>dashboard</a>.
   </p>
 </BaseLayout>
+
+<script>
+  // GitHub Pages serves this file for *any* unmatched URL while leaving the
+  // browser's address bar on the path that was actually requested. Every
+  // "./"-relative href/src on this page was built assuming the page sits at
+  // the site root (true of the file on disk, per BaseLayout's `depth` doc —
+  // false of wherever the visitor's dead link actually pointed). Re-anchor
+  // them using the base Astro already baked into the page's own stylesheet
+  // link, rather than hardcoding the deployment path here too.
+  const cssLink = document.querySelector<HTMLLinkElement>(
+    'link[rel="stylesheet"][href*="/_astro/"]',
+  );
+  const base = cssLink ? cssLink.getAttribute("href")!.split("/_astro/")[0] + "/" : "/";
+
+  document
+    .querySelectorAll<HTMLAnchorElement>(
+      'header a[href^="./"], [data-fallback-link][href^="./"]',
+    )
+    .forEach((a) => a.setAttribute("href", base + a.getAttribute("href")!.slice(2)));
+
+  document
+    .querySelectorAll<HTMLImageElement>('header img[src^="./"]')
+    .forEach((img) => (img.src = base + img.getAttribute("src")!.slice(2)));
+
+  document
+    .querySelectorAll<HTMLLinkElement>('link[rel="icon"][href^="./"]')
+    .forEach((link) => link.setAttribute("href", base + link.getAttribute("href")!.slice(2)));
+</script>
