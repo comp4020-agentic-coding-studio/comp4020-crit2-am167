@@ -18,10 +18,12 @@ interface Props {
   wide?: boolean;
   /** False only on the login/signup pages themselves — everywhere else the
    * app is already showing a signed-in user's balance and trips, so the nav
-   * shows the account chip instead of "Log in" / "Sign up". */
+   * shows the account chip. Auth pages hide the chip and the Log in / Sign up
+   * header links (those live in the card instead). */
   loggedIn?: boolean;
   /** "auth" paints the soft top wash behind the login/signup card, which
-   * otherwise floats in a flat field of --color-bg. */
+   * otherwise floats in a flat field of --color-bg. Also strips the
+   * management nav — auth screens are just the wordmark + card. */
   tone?: "default" | "auth";
 }
 
@@ -33,6 +35,7 @@ const {
   tone = "default",
 } = Astro.props;
 const up = depth === 0 ? "./" : "../";
+const isAuth = tone === "auth";
 
 const navLinks = [
   { href: `${up}dashboard/`, label: "Dashboard" },
@@ -76,52 +79,51 @@ const navLinks = [
           <span class="wordmark__text">MyWay+</span>
         </a>
         <nav aria-label="Primary" class="primary-nav">
-          <div id="primary-nav-panel" class="primary-nav__panel">
-            <ul class="primary-nav__links">
-              {
-                navLinks.map((link) => (
-                  <li>
-                    <a
-                      class:list={[link.label === title && "is-current"]}
-                      href={link.href}
-                      aria-current={link.label === title ? "page" : undefined}
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-            <ul class="primary-nav__auth">
-              {
-                loggedIn ? (
-                  <li class="account-chip">
-                    <span class="account-chip__avatar" aria-hidden="true">
-                      {ACCOUNT_NAME.charAt(0)}
-                    </span>
-                    <span class="account-chip__name">{ACCOUNT_NAME}</span>
-                  </li>
-                ) : (
-                  <>
-                    <li><a href={`${up}login/`}>Log in</a></li>
-                    <li><a class="is-primary" href={`${up}signup/`}>Sign up</a></li>
-                  </>
-                )
-              }
-            </ul>
-          </div>
+          {
+            !isAuth && (
+              <div id="primary-nav-panel" class="primary-nav__panel">
+                <ul class="primary-nav__links">
+                  {navLinks.map((link) => (
+                    <li>
+                      <a
+                        class:list={[link.label === title && "is-current"]}
+                        href={link.href}
+                        aria-current={link.label === title ? "page" : undefined}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <ul class="primary-nav__auth">
+                  {loggedIn && (
+                    <li class="account-chip">
+                      <span class="account-chip__avatar" aria-hidden="true">
+                        {ACCOUNT_NAME.charAt(0)}
+                      </span>
+                      <span class="account-chip__name">{ACCOUNT_NAME}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )
+          }
         </nav>
-        <div class="site-header__actions">
-          <button
-            type="button"
-            id="nav-toggle"
-            class="nav-toggle"
-            aria-expanded="false"
-            aria-controls="primary-nav-panel"
-          >
-            Menu
-          </button>
-        </div>
+        {
+          !isAuth && (
+            <div class="site-header__actions">
+              <button
+                type="button"
+                id="nav-toggle"
+                class="nav-toggle"
+                aria-expanded="false"
+                aria-controls="primary-nav-panel"
+              >
+                Menu
+              </button>
+            </div>
+          )
+        }
       </div>
     </header>
     <main class:list={[wide && "main-wide"]}>
@@ -175,6 +177,11 @@ const navLinks = [
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-4);
+  }
+
+  /* Auth pages only show the wordmark — no menu column to balance against. */
+  body.tone-auth .site-header__bar {
+    grid-template-columns: auto;
   }
 
   .wordmark {

@@ -737,3 +737,7 @@ the deployed site is online" step; independently confirmed
 `https://comp4020-agentic-coding-studio.github.io/comp4020-crit2-am167/`
 returns `200`. No crit tag needed — that's only for the shared final-project
 repo from week 9 on; crit 2 is its own standalone repo.
+
+Home is now the fake login entry (`LoginView`): username/password with no validation, Log in → dashboard. `/` and `/login/` share the same view so specs and signup’s Log in link still work; dashboard stays the post-login destination.
+
+Auth pages (`tone="auth"`): strip the management nav, Menu toggle, and header Log in / Sign up links — wordmark only. Cross-links stay in the auth cards. Keeps an empty `<nav>` landmark for the invariant.

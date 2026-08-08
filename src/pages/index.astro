@@ -1,8 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import DashboardView from "../components/DashboardView.astro";
+import LoginView from "../components/LoginView.astro";
 ---
 
-<BaseLayout title="Dashboard" depth={0} wide>
-  <DashboardView depth={0} />
+<BaseLayout title="Log in" depth={0} loggedIn={false} tone="auth">
+  <LoginView dashboardHref="./dashboard/" signupHref="./signup/" />
 </BaseLayout>
