@@ -693,3 +693,47 @@ Forced into a worktree for the edit (background-job isolation guard), fast-
 forward merged it straight back onto `main` afterward per the standing
 "avoid worktrees on this repo" preference, then deleted the branch.
 `pnpm check` green on `main` post-merge (285 tests, unchanged pass count).
+
+## 2026-08-08 --- shipped crit 2
+
+Ran `check:evidence` as part of preflight before shipping: it failed on
+`PROCESS.md`, not because a moment was missing but because both commit
+citations were plain `` (`sha`) `` text instead of the `[`sha`](url)`
+markdown-link format the script parses. Same wording, same commits — just
+reformatted as links to the real GitHub commit URLs, since that's a
+mechanical citation-syntax fix, not a rewrite of what Advay wrote.
+
+Flipped the repo public, enabled Pages as a workflow site, and dispatched
+`checks` — the `check` job's "Check internal links" step failed, reporting
+four broken links, all Astro's own auto-generated bundle `<link>`/`<script>`
+tags (`BaseLayout.BLppoVkK.css` etc.), not anything hand-authored. Root
+cause: `astro.config.mjs`'s `base` (`/comp4020-crit2-am167`) makes Astro
+write those asset hrefs root-absolute, but the physical `dist/` layout never
+nests under that prefix — only a real mount (GitHub Pages' own repo-subpath
+serving, or `pnpm preview`) resolves it correctly. `.github/workflows/checks.yml`'s
+`pnpm dlx linkinator ./dist` scans the raw filesystem with no knowledge of
+that mount, so it looks for `dist/comp4020-crit2-am167/_astro/...`, which
+doesn't exist.
+
+First instinct was to patch the workflow's linkinator invocation directly.
+Advay stopped me mid-edit — rightly: that file is the shared course
+template, untouched by any of this repo's own commits, and "the checks are
+the source of truth per the spec" unless the template itself is actually
+broken, which is a much higher bar than "I found a command that doesn't work
+for my config." Reverted the in-progress edit before it was ever committed.
+Re-verified the live deploy would actually be fine regardless (Astro's own
+`href`s + GitHub Pages' subpath mount resolve consistently — confirmed
+already via the zero-console-error preview sweep earlier this session), so
+this was purely a scan-vs-mount mismatch in the check itself, not a real
+site defect. Advay then checked other students' repos, found the same
+pattern, and confirmed the workflow file itself needed the fix — the
+template's linkinator step doesn't yet account for `base`.
+
+Added `--url-rewrite-search "/comp4020-crit2-am167/" --url-rewrite-replace
+"/"` to the linkinator invocation, verified locally (`14/14 links resolve`)
+before touching CI at all, then committed, pushed, and re-dispatched.
+`check` and `deploy` both went green, including the workflow's own "Verify
+the deployed site is online" step; independently confirmed
+`https://comp4020-agentic-coding-studio.github.io/comp4020-crit2-am167/`
+returns `200`. No crit tag needed — that's only for the shared final-project
+repo from week 9 on; crit 2 is its own standalone repo.
