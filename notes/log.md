@@ -651,3 +651,45 @@ said to skip (dark mode, landing page, real map tiles, extra motion).
   `index.astro` renders the same dashboard, so "home" is unchanged, but the
   URL can't miss now. Worth noting the redesign spec only checks `nav a[href]`
   resolve, and the wordmark sits outside `<nav>`, so nothing caught this.
+
+## 2026-08-08 --- pre-deploy preflight: full viewport sweep, favicon, 404 depth bug
+
+Deployment-prep pass: `pnpm check` first (green — 285 tests), then walked all
+nine real pages plus 404 in real Chrome via `pnpm preview` at both marked
+viewports (1920×1080, 390×844), checking console errors and
+`scrollWidth === clientWidth` rather than eyeballing. Clicked through the
+top-up flow end-to-end ($20 preset → "Processing…" → new balance → back to
+dashboard), opened/closed the mobile nav panel, and watched live-map vehicle
+markers move via two screenshots a few seconds apart to confirm the earlier
+pacing/corridor fix still holds.
+
+Two real findings, both fixed:
+
+- **No favicon.** Every page triggered a spurious `/favicon.ico` 404 at the
+  domain root since nothing declared one. Added `<link rel="icon">` in
+  `BaseLayout` reusing the existing app-icon asset via the same `${up}`
+  relative pattern already used for the logo `<img>`.
+- **404 page breaks for trailing-slash dead links.** GitHub Pages serves
+  `404.html` for any unmatched URL but leaves the browser's address bar on
+  the *requested* path. `404.astro` renders at `depth={0}` (correct for
+  where the file sits on disk) but every `./`-relative href/src on it is
+  resolved by the browser against the *displayed* URL, not the file's real
+  location — so `/comp4020-crit2-am167/does-not-exist/` (any dead link with a
+  trailing slash) left the logo broken and every nav/body link one directory
+  too deep, while `/comp4020-crit2-am167/nonexistent` (no trailing slash)
+  worked by accident. Confirmed via `list_network_requests` (logo 404s only
+  in the trailing-slash case). The fully-correct fix is a base-anchored path,
+  which is exactly what `CLAUDE.md`'s relative-links rule forbids for
+  internal nav — flagged this conflict to Advay rather than picking a side
+  unilaterally. Resolution: a small inline script on `404.astro` only, that
+  derives the real base at runtime from the `href` of the page's own
+  Astro-emitted stylesheet `<link>` (always correctly base-prefixed, since
+  Astro's own asset pipeline writes it, not hand-authored markup) and
+  rewrites the logo/nav/favicon/fallback-link paths against it. No hardcoded
+  base path anywhere in source, no `import.meta.env.BASE_URL` — idempotent
+  for the already-working case too, so no regression risk on normal pages.
+
+Forced into a worktree for the edit (background-job isolation guard), fast-
+forward merged it straight back onto `main` afterward per the standing
+"avoid worktrees on this repo" preference, then deleted the branch.
+`pnpm check` green on `main` post-merge (285 tests, unchanged pass count).
