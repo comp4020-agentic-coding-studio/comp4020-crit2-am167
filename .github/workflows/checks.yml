@@ -42,7 +42,16 @@ jobs:
         if: ${{ !github.event.repository.is_template }}
         run: pnpm check:evidence
       - name: Check internal links
-        run: pnpm dlx linkinator ./dist --silent
+        # linkinator serves ./dist as the filesystem root, but every asset URL
+        # Astro emits is prefixed with `base` (/comp4020-crit2-am167) since the
+        # physical dist/ layout never nests under it — only the deployed site
+        # (and `pnpm preview`) actually mount dist/ at that path. Strip the
+        # base back out before matching, so the local scan checks the same
+        # resolution the real mount performs.
+        run: >-
+          pnpm dlx linkinator ./dist --silent
+          --url-rewrite-search "/comp4020-crit2-am167/"
+          --url-rewrite-replace "/"
       - name: Scan for committed secrets
         # Pinned, both halves: the SHA fixes the action's script, and `version`
         # fixes the scanner image, which otherwise floats on :latest. These two
